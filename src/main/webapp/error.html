@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="error-container">
+    <div class="error-box">
+        <div class="error-icon">⚠️</div>
+        <h1>Oops! Something went wrong</h1>
+        <p id="error-message">An unexpected error occurred. Please try again later.</p>
+        <div class="error-actions">
+            <button onclick="goBack()" class="btn btn-primary">Go Back</button>
+            <a href="dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
+            <a href="login.html" class="btn btn-outline">Go to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+
+    // Get error message from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    if (message) {
+        document.getElementById('error-message').textContent = message;
+    }
+</script>
+</body>
+</html>
