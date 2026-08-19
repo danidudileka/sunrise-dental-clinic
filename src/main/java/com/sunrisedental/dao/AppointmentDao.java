@@ -418,4 +418,122 @@ public class AppointmentDao extends BaseDao {
                         rs.getTimestamp("updated_at").toLocalDateTime() : null)
                 .build();
     }
+
+    /**
+     * Find appointments by patient contact number
+     */
+    public List<Appointment> findByContactNumber(String contactNumber) {
+        String sql = "SELECT a.*, p.patient_name, p.contact_number as patient_contact, " +
+                "p.address, p.email, d.name as dentist_name, " +
+                "t.treatment_name, t.base_cost as treatment_cost " +
+                "FROM appointments a " +
+                "INNER JOIN patients p ON a.patient_id = p.patient_id " +
+                "INNER JOIN dentists d ON a.dentist_id = d.dentist_id " +
+                "INNER JOIN treatments t ON a.treatment_id = t.treatment_id " +
+                "WHERE p.contact_number = ? " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, contactNumber);
+
+            resultSet = statement.executeQuery();
+
+            List<Appointment> appointments = new ArrayList<>();
+            while (resultSet.next()) {
+                appointments.add(mapAppointmentWithDetails(resultSet));
+            }
+
+            return appointments;
+
+        } catch (SQLException e) {
+            logger.error("Error finding appointments by contact number: {}", contactNumber, e);
+            throw new DatabaseException("Failed to retrieve appointments", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Find appointments by patient name (partial match)
+     */
+    public List<Appointment> findByPatientName(String patientName) {
+        String sql = "SELECT a.*, p.patient_name, p.contact_number as patient_contact, " +
+                "p.address, p.email, d.name as dentist_name, " +
+                "t.treatment_name, t.base_cost as treatment_cost " +
+                "FROM appointments a " +
+                "INNER JOIN patients p ON a.patient_id = p.patient_id " +
+                "INNER JOIN dentists d ON a.dentist_id = d.dentist_id " +
+                "INNER JOIN treatments t ON a.treatment_id = t.treatment_id " +
+                "WHERE p.patient_name LIKE ? " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, "%" + patientName + "%");
+
+            resultSet = statement.executeQuery();
+
+            List<Appointment> appointments = new ArrayList<>();
+            while (resultSet.next()) {
+                appointments.add(mapAppointmentWithDetails(resultSet));
+            }
+
+            return appointments;
+
+        } catch (SQLException e) {
+            logger.error("Error finding appointments by patient name: {}", patientName, e);
+            throw new DatabaseException("Failed to retrieve appointments", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Get all appointments (with optional date filter)
+     */
+    public List<Appointment> findAllAppointments() {
+        String sql = "SELECT a.*, p.patient_name, p.contact_number as patient_contact, " +
+                "p.address, p.email, d.name as dentist_name, " +
+                "t.treatment_name, t.base_cost as treatment_cost " +
+                "FROM appointments a " +
+                "INNER JOIN patients p ON a.patient_id = p.patient_id " +
+                "INNER JOIN dentists d ON a.dentist_id = d.dentist_id " +
+                "INNER JOIN treatments t ON a.treatment_id = t.treatment_id " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+
+            resultSet = statement.executeQuery();
+
+            List<Appointment> appointments = new ArrayList<>();
+            while (resultSet.next()) {
+                appointments.add(mapAppointmentWithDetails(resultSet));
+            }
+
+            return appointments;
+
+        } catch (SQLException e) {
+            logger.error("Error finding all appointments", e);
+            throw new DatabaseException("Failed to retrieve appointments", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
 }

@@ -285,4 +285,42 @@ public class AppointmentService {
                 .createdAt(appointment.getCreatedAt())
                 .build();
     }
+
+    /**
+     * Search appointments by contact number
+     */
+    public List<AppointmentResponse> searchByContactNumber(String contactNumber) {
+        if (!ValidationUtil.isValidPhoneNumber(contactNumber)) {
+            throw new ValidationException("Invalid contact number format");
+        }
+
+        List<Appointment> appointments = appointmentDao.findByContactNumber(contactNumber);
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Search appointments by patient name
+     */
+    public List<AppointmentResponse> searchByPatientName(String patientName) {
+        if (patientName == null || patientName.trim().length() < 2) {
+            throw new ValidationException("Patient name must be at least 2 characters");
+        }
+
+        List<Appointment> appointments = appointmentDao.findByPatientName(patientName.trim());
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all appointments
+     */
+    public List<AppointmentResponse> getAllAppointments() {
+        List<Appointment> appointments = appointmentDao.findAllAppointments();
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
 }

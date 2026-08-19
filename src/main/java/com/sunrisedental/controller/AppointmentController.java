@@ -90,6 +90,20 @@ public class AppointmentController extends BaseController {
                 String patientIdStr = pathInfo.substring("patient/".length());
                 handleGetByPatient(request, response, patientIdStr);
 
+            } else if (pathInfo.startsWith("contact/")) {
+                // Search by contact number: /api/appointments/contact/+94-77-1234567
+                String contactNumber = pathInfo.substring("contact/".length());
+                handleSearchByContact(request, response, contactNumber);
+
+            } else if (pathInfo.startsWith("name/")) {
+                // Search by patient name: /api/appointments/name/John
+                String patientName = pathInfo.substring("name/".length());
+                handleSearchByName(request, response, patientName);
+
+            } else if (pathInfo.equals("all") || pathInfo.isEmpty()) {
+                // Get all appointments: /api/appointments/all
+                handleGetAllAppointments(request, response);
+
             } else {
                 sendError(response, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
             }
@@ -97,6 +111,33 @@ public class AppointmentController extends BaseController {
         } catch (Exception e) {
             handleException(request, response, e);
         }
+    }
+
+    /**
+     * Handle search by contact number
+     */
+    private void handleSearchByContact(HttpServletRequest request, HttpServletResponse response,
+                                       String contactNumber) throws IOException {
+        List<AppointmentResponse> appointments = appointmentService.searchByContactNumber(contactNumber);
+        sendSuccess(response, "Appointments retrieved successfully", appointments);
+    }
+
+    /**
+     * Handle search by patient name
+     */
+    private void handleSearchByName(HttpServletRequest request, HttpServletResponse response,
+                                    String patientName) throws IOException {
+        List<AppointmentResponse> appointments = appointmentService.searchByPatientName(patientName);
+        sendSuccess(response, "Appointments retrieved successfully", appointments);
+    }
+
+    /**
+     * Handle get all appointments
+     */
+    private void handleGetAllAppointments(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        List<AppointmentResponse> appointments = appointmentService.getAllAppointments();
+        sendSuccess(response, "Appointments retrieved successfully", appointments);
     }
 
     /**

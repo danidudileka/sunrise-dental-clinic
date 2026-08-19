@@ -286,6 +286,231 @@ async function cancelAppointment() {
  */
 function viewBill() {
     if (currentAppointmentNumber) {
-        window.location.href = `sunrise-dental-clinic/billing.html?appointment=${currentAppointmentNumber}`;
+        window.location.href = `/billing.html?appointment=${currentAppointmentNumber}`;
+    }
+}
+
+/**
+ * Change search type
+ */
+function changeSearchType() {
+    const searchType = document.getElementById('search-type').value;
+
+    // Hide all search containers
+    document.getElementById('search-input-container').style.display = 'none';
+    document.getElementById('date-search-container').style.display = 'none';
+    document.getElementById('all-search-container').style.display = 'none';
+    document.getElementById('appointment-details').style.display = 'none';
+    document.getElementById('appointments-list').style.display = 'none';
+
+    // Show relevant container
+    if (searchType === 'all') {
+        document.getElementById('all-search-container').style.display = 'block';
+        loadAllAppointments();
+    } else if (searchType === 'date') {
+        document.getElementById('date-search-container').style.display = 'flex';
+        // Set default date to today
+        document.getElementById('search-date').value = new Date().toISOString().split('T')[0];
+    } else {
+        document.getElementById('search-input-container').style.display = 'flex';
+
+        // Update placeholder based on search type
+        const input = document.getElementById('search-appointment-number');
+        if (searchType === 'appointment') {
+            input.placeholder = 'Enter appointment number (e.g., APT202400001)';
+        } else if (searchType === 'contact') {
+            input.placeholder = 'Enter contact number (e.g., +94-77-1234567)';
+        } else if (searchType === 'name') {
+            input.placeholder = 'Enter patient name (e.g., John)';
+        }
+    }
+}
+
+/**
+ * Search appointment (main search function)
+ */
+async function searchAppointment() {
+    const searchType = document.getElementById('search-type').value;
+
+    switch (searchType) {
+        case 'appointment':
+            await searchByAppointmentNumber();
+            break;
+        case 'contact':
+            await searchByContactNumber();
+            break;
+        case 'name':
+            await searchByPatientName();
+            break;
+    }
+}
+
+/**
+ * Search by appointment number
+ */
+async function searchByAppointmentNumber() {
+    const appointmentNumber = document.getElementById('search-appointment-number').value;
+
+    if (!appointmentNumber) {
+        showAlert('search-error', 'Please enter an appointment number', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiGet(`/appointments/number/${appointmentNumber}`);
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentDetails(response.data);
+            currentAppointmentNumber = appointmentNumber;
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Search by contact number
+ */
+async function searchByContactNumber() {
+    const contactNumber = document.getElementById('search-appointment-number').value;
+
+    if (!contactNumber) {
+        showAlert('search-error', 'Please enter a contact number', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiGet(`/appointments/contact/${encodeURIComponent(contactNumber)}`);
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentsList(response.data);
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Search by patient name
+ */
+async function searchByPatientName() {
+    const patientName = document.getElementById('search-appointment-number').value;
+
+    if (!patientName || patientName.length < 2) {
+        showAlert('search-error', 'Please enter at least 2 characters', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiGet(`/appointments/name/${encodeURIComponent(patientName)}`);
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentsList(response.data);
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Search by date
+ */
+async function searchByDate() {
+    const date = document.getElementById('search-date').value;
+
+    if (!date) {
+        showAlert('search-error', 'Please select a date', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiGet(`/appointments/date/${date}`);
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentsList(response.data);
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Load all appointments
+ */
+async function loadAllAppointments() {
+    try {
+        const response = await apiGet('/appointments/all');
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentsList(response.data);
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Display appointments list
+ */
+function displayAppointmentsList(appointments) {
+    const listContainer = document.getElementById('appointments-list');
+    const tableBody = document.getElementById('appointments-list-body');
+
+    document.getElementById('appointment-details').style.display = 'none';
+
+    if (!appointments || appointments.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">No appointments found</td>
+            </tr>
+        `;
+        listContainer.style.display = 'block';
+        return;
+    }
+
+    tableBody.innerHTML = appointments.map(appointment => `
+        <tr>
+            <td>${appointment.appointmentNumber}</td>
+            <td>${appointment.patientName}</td>
+            <td>${appointment.contactNumber}</td>
+            <td>${appointment.dentistName}</td>
+            <td>${appointment.treatmentType}</td>
+            <td>${formatDate(appointment.appointmentDate)}</td>
+            <td>${formatTime(appointment.appointmentTime)}</td>
+            <td>
+                <span class="status-badge status-${appointment.status.toLowerCase()}">
+                    ${appointment.status}
+                </span>
+            </td>
+            <td>
+                <button onclick="viewAppointmentDetails('${appointment.appointmentNumber}')" 
+                        class="btn btn-sm btn-secondary">View</button>
+            </td>
+        </tr>
+    `).join('');
+
+    listContainer.style.display = 'block';
+}
+
+/**
+ * View appointment details from list
+ */
+async function viewAppointmentDetails(appointmentNumber) {
+    try {
+        const response = await apiGet(`/appointments/number/${appointmentNumber}`);
+
+        if (response.status === 'SUCCESS') {
+            displayAppointmentDetails(response.data);
+            currentAppointmentNumber = appointmentNumber;
+            document.getElementById('appointments-list').style.display = 'none';
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
     }
 }

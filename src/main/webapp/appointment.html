@@ -160,16 +160,41 @@
         <!-- Search Appointment Tab -->
         <div id="search-tab" class="tab-content">
             <div class="card">
-                <h2>Search Appointment</h2>
+                <h2>Search Appointments</h2>
 
                 <div id="search-error" class="alert alert-error" style="display: none;"></div>
 
-                <div class="search-box">
+                <!-- Search Type Selector -->
+                <div class="search-type-selector">
+                    <label>Search by:</label>
+                    <select id="search-type" class="form-control" onchange="changeSearchType()">
+                        <option value="appointment">Appointment Number</option>
+                        <option value="contact">Contact Number</option>
+                        <option value="name">Patient Name</option>
+                        <option value="date">Date</option>
+                        <option value="all">All Appointments</option>
+                    </select>
+                </div>
+
+                <!-- Search Input -->
+                <div id="search-input-container" class="search-box">
                     <input type="text" id="search-appointment-number" class="form-control"
                            placeholder="Enter appointment number (e.g., APT202400001)">
                     <button onclick="searchAppointment()" class="btn btn-primary">Search</button>
                 </div>
 
+                <!-- Date Search -->
+                <div id="date-search-container" class="search-box" style="display: none;">
+                    <input type="date" id="search-date" class="form-control">
+                    <button onclick="searchByDate()" class="btn btn-primary">Search</button>
+                </div>
+
+                <!-- All Appointments Button -->
+                <div id="all-search-container" style="display: none;">
+                    <button onclick="loadAllAppointments()" class="btn btn-primary">Load All Appointments</button>
+                </div>
+
+                <!-- Single Appointment Details -->
                 <div id="appointment-details" class="appointment-details" style="display: none;">
                     <h3>Appointment Details</h3>
                     <table class="table">
@@ -180,6 +205,29 @@
                         <button onclick="viewBill()" class="btn btn-secondary">View Bill</button>
                         <button onclick="completeAppointment()" class="btn btn-success">Complete</button>
                         <button onclick="cancelAppointment()" class="btn btn-danger">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Multiple Appointments List -->
+                <div id="appointments-list" style="display: none;">
+                    <h3>Appointments Found</h3>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Appointment #</th>
+                                <th>Patient</th>
+                                <th>Contact</th>
+                                <th>Dentist</th>
+                                <th>Treatment</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="appointments-list-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
