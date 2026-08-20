@@ -97,6 +97,20 @@
             <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JavaMail API for sending emails -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <!-- JAF (JavaBeans Activation Framework) -->
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
