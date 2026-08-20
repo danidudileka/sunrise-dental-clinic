@@ -123,8 +123,33 @@ public class AppointmentService {
                 .createdBy(createdBy)
                 .build();
 
+
         int appointmentId = appointmentDao.createAppointment(appointment);
         logger.info("Created appointment with ID: {} and number: {}", appointmentId, appointmentNumber);
+
+// Send email confirmation if patient email is provided
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            try {
+                boolean emailSent = EmailUtil.sendAppointmentConfirmation(
+                        request.getEmail(),
+                        request.getPatientName(),
+                        appointmentNumber,
+                        request.getDentistName(),
+                        request.getTreatmentType(),
+                        request.getAppointmentDate(),
+                        request.getAppointmentTime()
+                );
+
+                if (emailSent) {
+                    logger.info("Appointment confirmation email sent to: {}", request.getEmail());
+                } else {
+                    logger.warn("Failed to send confirmation email to: {}", request.getEmail());
+                }
+            } catch (Exception e) {
+                logger.error("Error sending confirmation email", e);
+                // Don't fail the appointment registration if email fails
+            }
+        }
 
         // Return appointment response
         return getAppointmentByNumber(appointmentNumber);
