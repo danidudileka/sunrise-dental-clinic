@@ -12,8 +12,12 @@ import jakarta.mail.internet.MimeMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 /**
@@ -26,6 +30,7 @@ public class EmailUtil {
 
     static {
         loadProperties();
+        disableSslVerification();
     }
 
     /**
@@ -61,8 +66,33 @@ public class EmailUtil {
         emailProperties.put("email.starttls", "true");
     }
 
+
+    private static void disableSslVerification() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[] {
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            SSLContext.setDefault(sc);
+
+            logger.info("SSL verification disabled for email");
+        } catch (Exception e) {
+            logger.error("Error disabling SSL verification", e);
+        }
+    }
+
     /**
-     * Send appointment confirmation email
+     * Send appointment confirmation email to patient
      */
     public static boolean sendAppointmentConfirmation(String toEmail, String patientName,
                                                       String appointmentNumber, String dentistName,
@@ -95,6 +125,13 @@ public class EmailUtil {
         props.put("mail.smtp.port", emailProperties.getProperty("email.port"));
         props.put("mail.smtp.auth", emailProperties.getProperty("email.auth"));
         props.put("mail.smtp.starttls.enable", emailProperties.getProperty("email.starttls"));
+        props.put("mail.smtp.ssl.trust", "*");  // Trust all hosts
+        props.put("mail.smtp.ssl.checkserveridentity", "false");  // Disable server identity check
+
+        // Additional properties for better compatibility
+        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -141,11 +178,11 @@ public class EmailUtil {
         body.append("Time: ").append(appointmentTime).append("\n");
         body.append("----------------------------------------\n\n");
         body.append("Please arrive 10 minutes before your appointment time.\n\n");
-        body.append("If you need to cancel or reschedule, please contact us at +94112345678.\n\n");
+        body.append("If you need to cancel or reschedule, please contact us at +94-11-2345678.\n\n");
         body.append("Thank you for choosing Sunrise Dental Clinic.\n\n");
         body.append("Best regards,\n");
         body.append("Sunrise Dental Clinic\n");
-        body.append("No.123, Main Street, Colombo 07\n");
+        body.append("123 Main Street, Colombo 07\n");
 
         return body.toString();
     }

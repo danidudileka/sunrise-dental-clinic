@@ -13,6 +13,7 @@ import com.sunrisedental.model.Dentist;
 import com.sunrisedental.model.Patient;
 import com.sunrisedental.model.Treatment;
 import com.sunrisedental.util.DateUtil;
+import com.sunrisedental.util.EmailUtil;
 import com.sunrisedental.util.ValidationUtil;
 
 import org.apache.logging.log4j.LogManager;
