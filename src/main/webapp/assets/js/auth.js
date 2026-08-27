@@ -1,70 +1,44 @@
 /**
- * Authentication management
+ * Authentication management and sidebar navigation
  */
 
 const Auth = {
-    /**
-     * Check if user is authenticated
-     */
     isAuthenticated() {
-        // Check both localStorage and sessionStorage
         return localStorage.getItem('userId') !== null ||
             sessionStorage.getItem('userId') !== null;
     },
 
-    /**
-     * Get current user info
-     */
     getUserInfo() {
-        // Try localStorage first, then sessionStorage
-        const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
-        const username = localStorage.getItem('username') || sessionStorage.getItem('username');
-        const fullName = localStorage.getItem('fullName') || sessionStorage.getItem('fullName');
-        const role = localStorage.getItem('userRole') || sessionStorage.getItem('userRole');
-
         return {
-            userId: userId,
-            username: username,
-            fullName: fullName,
-            role: role
+            userId: localStorage.getItem('userId') || sessionStorage.getItem('userId'),
+            username: localStorage.getItem('username') || sessionStorage.getItem('username'),
+            fullName: localStorage.getItem('fullName') || sessionStorage.getItem('fullName'),
+            role: localStorage.getItem('userRole') || sessionStorage.getItem('userRole')
         };
     },
 
-    /**
-     * Set user info after login
-     */
     setUserInfo(userInfo) {
-        // Store in localStorage (persists across browser sessions)
         localStorage.setItem('userId', userInfo.userId);
         localStorage.setItem('username', userInfo.username);
         localStorage.setItem('fullName', userInfo.fullName);
         localStorage.setItem('userRole', userInfo.role);
 
-        // Also store in sessionStorage (cleared when browser closes)
         sessionStorage.setItem('userId', userInfo.userId);
         sessionStorage.setItem('username', userInfo.username);
         sessionStorage.setItem('fullName', userInfo.fullName);
         sessionStorage.setItem('userRole', userInfo.role);
     },
 
-    /**
-     * Clear user info on logout
-     */
     clearUserInfo() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        localStorage.removeItem('fullName');
-        localStorage.removeItem('userRole');
-
-        sessionStorage.removeItem('userId');
-        sessionStorage.removeItem('username');
-        sessionStorage.removeItem('fullName');
-        sessionStorage.removeItem('userRole');
+        localStorage.clear();
+        sessionStorage.clear();
     },
 
-    /**
-     * Handle login
-     */
+    hasRole(role) {
+        const userRole = this.getUserInfo().role;
+        return userRole === role;
+    },
+
     async login(username, password) {
         const response = await apiPost('/auth/login', {
             username: username,
@@ -79,9 +53,6 @@ const Auth = {
         }
     },
 
-    /**
-     * Handle logout
-     */
     async logout() {
         try {
             await apiPost('/auth/logout', {});
@@ -91,25 +62,87 @@ const Auth = {
             this.clearUserInfo();
             window.location.href = 'login.html';
         }
-    },
-
-    /**
-     * Check session validity with server
-     */
-    async checkSession() {
-        try {
-            const response = await apiGet('/auth/session');
-            return response.data && response.data.authenticated;
-        } catch (error) {
-            return false;
-        }
     }
 };
 
-// Login form handler
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('login-form');
+/**
+ * Initialize sidebar navigation based on user role
+ */
+function initSidebar() {
+    const userInfo = Auth.getUserInfo();
+    const sidebarMenu = document.getElementById('sidebar-menu');
 
+    if (!sidebarMenu || !userInfo.role) return;
+
+    // Set user info in sidebar
+    const userNameElement = document.getElementById('sidebar-user-name');
+    const userRoleElement = document.getElementById('sidebar-user-role');
+    const welcomeNameElement = document.getElementById('welcome-name');
+
+    if (userNameElement) userNameElement.textContent = userInfo.fullName || userInfo.username;
+    if (userRoleElement) userRoleElement.textContent = userInfo.role;
+    if (welcomeNameElement) welcomeNameElement.textContent = userInfo.fullName || userInfo.username;
+
+    // Define menu items based on role
+    let menuItems = [];
+
+    if (userInfo.role === 'ADMIN') {
+        menuItems = [
+            { text: 'Dashboard', icon: 'fa-dashboard', link: 'dashboard.html' },
+            { text: 'Patient Management', icon: 'fa-users', link: 'patients.html' },
+            { text: 'Appointments', icon: 'fa-calendar', link: 'appointment.html' },
+            { text: 'Billing', icon: 'fa-file-invoice', link: 'billing.html' },
+            { text: 'Reports', icon: 'fa-chart-line', link: 'reports.html' },
+            { text: 'User Management', icon: 'fa-user-cog', link: 'users.html' },
+            { text: 'Help', icon: 'fa-question-circle', link: 'help.html' }
+        ];
+    } else if (userInfo.role === 'RECEPTIONIST') {
+        menuItems = [
+            { text: 'Dashboard', icon: 'fa-dashboard', link: 'dashboard.html' },
+            { text: 'Patient Management', icon: 'fa-users', link: 'patients.html' },
+            { text: 'Appointments', icon: 'fa-calendar', link: 'appointment.html' },
+            { text: 'Billing', icon: 'fa-file-invoice', link: 'billing.html' },
+            { text: 'Reports', icon: 'fa-chart-line', link: 'reports.html' },
+            { text: 'Help', icon: 'fa-question-circle', link: 'help.html' }
+        ];
+    } else if (userInfo.role === 'DENTIST') {
+        menuItems = [
+            { text: 'My Dashboard', icon: 'fa-dashboard', link: 'doctor-dashboard.html' },
+            { text: 'My Appointments', icon: 'fa-calendar', link: 'doctor-dashboard.html' },
+            { text: 'Patient Search', icon: 'fa-search', link: 'patients.html' },
+            { text: 'Help', icon: 'fa-question-circle', link: 'help.html' }
+        ];
+    }
+
+    // Generate menu HTML
+    const currentPage = window.location.pathname.split('/').pop();
+
+    sidebarMenu.innerHTML = menuItems.map(item => {
+        const isActive = item.link === currentPage;
+        return `
+            <li>
+                <a href="${item.link}" class="${isActive ? 'active' : ''}">
+                    <span class="icon"><i class="fas ${item.icon}"></i></span>
+                    <span>${item.text}</span>
+                </a>
+            </li>
+        `;
+    }).join('');
+
+    // Redirect doctor to doctor dashboard if on wrong page
+    if (userInfo.role === 'DENTIST' &&
+        !currentPage.includes('doctor-dashboard') &&
+        !currentPage.includes('patients') &&
+        !currentPage.includes('help') &&
+        !currentPage.includes('login')) {
+        window.location.href = 'doctor-dashboard.html';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Login form handler
+    const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -117,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Show loading state
             const buttonText = document.getElementById('login-button-text');
             const buttonSpinner = document.getElementById('login-button-spinner');
 
@@ -127,18 +159,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const userInfo = await Auth.login(username, password);
 
-                // Show success message briefly
                 showAlert('success-message', 'Login successful! Redirecting...', 'success');
 
-                // Redirect to dashboard after short delay
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    if (userInfo.role === 'DENTIST') {
+                        window.location.href = 'doctor-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
                 }, 500);
 
             } catch (error) {
                 showAlert('error-message', error.message, 'error');
-
-                // Hide loading state
                 if (buttonText) buttonText.style.display = 'inline';
                 if (buttonSpinner) buttonSpinner.style.display = 'none';
             }
@@ -154,19 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Set user info in navbar
-    const userInfo = Auth.getUserInfo();
-    if (userInfo.username) {
-        const userNameElement = document.getElementById('user-name');
-        const welcomeNameElement = document.getElementById('welcome-name');
-
-        if (userNameElement) {
-            userNameElement.textContent = userInfo.fullName || userInfo.username;
-        }
-
-        if (welcomeNameElement) {
-            welcomeNameElement.textContent = userInfo.fullName || userInfo.username;
-        }
+    // Initialize sidebar if not on login page
+    if (!window.location.pathname.includes('login.html')) {
+        initSidebar();
     }
 
     // Check authentication on protected pages
@@ -174,10 +196,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const isLoginPage = currentPath.includes('login.html');
     const isHelpPage = currentPath.includes('help.html');
     const isErrorPage = currentPath.includes('error.html');
-    const isIndexPage = currentPath.endsWith('/') || currentPath.endsWith('/index.html');
 
-    // Only check authentication on protected pages
-    if (!isLoginPage && !isHelpPage && !isErrorPage && !isIndexPage) {
+    if (!isLoginPage && !isHelpPage && !isErrorPage) {
         if (!Auth.isAuthenticated()) {
             window.location.href = 'login.html';
         }

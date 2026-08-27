@@ -5,99 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help - Sunrise Dental Clinic</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="app-container">
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="brand-icon">🦷</span>
-            <span class="brand-name">Sunrise Dental</span>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sunrise Dental</h2>
+            <p>Clinic Management System</p>
         </div>
 
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="dashboard.html" class="nav-link">
-                    <span class="nav-icon">📊</span>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="appointment.html" class="nav-link">
-                    <span class="nav-icon">📅</span>
-                    <span>Appointments</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="billing.html" class="nav-link">
-                    <span class="nav-icon">💳</span>
-                    <span>Billing</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="reports.html" class="nav-link">
-                    <span class="nav-icon">📈</span>
-                    <span>Reports</span>
-                </a>
-            </li>
-            <li class="nav-item active">
-                <a href="help.html" class="nav-link">
-                    <span class="nav-icon">❓</span>
-                    <span>Help</span>
-                </a>
-            </li>
-        </ul>
+        <nav class="sidebar-nav">
+            <ul id="sidebar-menu"></ul>
+        </nav>
 
-        <div class="nav-user">
-            <span id="user-name" class="user-name">Loading...</span>
-            <button id="logout-button" class="btn btn-sm btn-outline">Logout</button>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-name" id="sidebar-user-name">Loading...</span>
+                <span class="user-role" id="sidebar-user-role"></span>
+            </div>
+            <button id="logout-button" class="btn btn-outline btn-block">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
-    </nav>
+    </aside>
 
     <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
             <h1>Help & Instructions</h1>
-            <p class="text-muted">Step-by-step guide for using the system</p>
+            <p>Step-by-step guide for using the system</p>
         </div>
 
         <!-- Help Topics -->
         <div class="help-topics">
             <div class="card">
-                <h2>📅 Managing Appointments</h2>
+                <div class="card-header">
+                    <h2><i class="fas fa-calendar-plus"></i> Managing Appointments</h2>
+                </div>
                 <ol class="help-steps">
-                    <li>Navigate to the <strong>Appointments</strong> page from the menu</li>
-                    <li>Click on the <strong>Register Appointment</strong> tab</li>
-                    <li>Fill in the patient details:
-                        <ul>
-                            <li>Patient Name (required)</li>
-                            <li>Contact Number (required)</li>
-                            <li>Address (optional)</li>
-                            <li>Email (optional)</li>
-                        </ul>
-                    </li>
-                    <li>Select the dentist from the dropdown</li>
-                    <li>Select the treatment type</li>
+                    <li>First, register the patient in <strong>Patient Management</strong></li>
+                    <li>Note the patient ID (e.g., P001)</li>
+                    <li>Go to <strong>Appointments</strong> page</li>
+                    <li>Enter the patient ID and search</li>
+                    <li>Select dentist and treatment type</li>
                     <li>Choose appointment date and time</li>
                     <li>Click <strong>Register Appointment</strong></li>
-                </ol>
-
-                <h3>Searching for an Appointment</h3>
-                <ol class="help-steps">
-                    <li>Go to the <strong>Appointments</strong> page</li>
-                    <li>Click on the <strong>Search Appointment</strong> tab</li>
-                    <li>Enter the appointment number (e.g., APT202400001)</li>
-                    <li>Click <strong>Search</strong> to view details</li>
                 </ol>
             </div>
 
             <div class="card">
-                <h2>💳 Billing Process</h2>
+                <div class="card-header">
+                    <h2><i class="fas fa-user-plus"></i> Patient Registration</h2>
+                </div>
                 <ol class="help-steps">
-                    <li>Navigate to the <strong>Billing</strong> page</li>
+                    <li>Go to <strong>Patient Management</strong> page</li>
+                    <li>Click <strong>Register Patient</strong> tab</li>
+                    <li>Fill in patient details:
+                        <ul>
+                            <li>Patient Name (required)</li>
+                            <li>Contact Number (required)</li>
+                            <li>Email (optional)</li>
+                            <li>Other details (optional)</li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>Register Patient</strong></li>
+                    <li>System will generate a Patient ID (e.g., P001)</li>
+                    <li>Patient will receive email confirmation</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-file-invoice"></i> Billing Process</h2>
+                </div>
+                <ol class="help-steps">
+                    <li>Go to <strong>Billing</strong> page</li>
                     <li>Enter the appointment number</li>
-                    <li>Click <strong>Calculate</strong> to preview the bill</li>
-                    <li>Review the bill details:
+                    <li>Click <strong>Calculate</strong> to preview bill</li>
+                    <li>Review:
                         <ul>
                             <li>Treatment Cost</li>
                             <li>Consultation Fee</li>
@@ -105,48 +92,52 @@
                             <li>Total Amount</li>
                         </ul>
                     </li>
-                    <li>Click <strong>Generate Bill</strong> to create the bill</li>
+                    <li>Click <strong>Generate Bill</strong></li>
                     <li>Select payment method</li>
                     <li>Click <strong>Process Payment</strong></li>
-                    <li>Click <strong>Print Bill</strong> for a physical copy</li>
+                    <li>Click <strong>Print Bill</strong> for receipt</li>
                 </ol>
             </div>
 
             <div class="card">
-                <h2>📈 Generating Reports</h2>
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> Reports</h2>
+                </div>
                 <ol class="help-steps">
-                    <li>Go to the <strong>Reports</strong> page</li>
+                    <li>Go to <strong>Reports</strong> page</li>
                     <li>Select report type:
                         <ul>
-                            <li><strong>Summary Report:</strong> Overview of all activities</li>
-                            <li><strong>Daily Appointments:</strong> Appointments for a specific day</li>
-                            <li><strong>Revenue Report:</strong> Revenue analysis</li>
+                            <li><strong>Summary:</strong> Overall statistics</li>
+                            <li><strong>Daily:</strong> Appointments for a day</li>
+                            <li><strong>Revenue:</strong> Financial analysis</li>
                         </ul>
                     </li>
-                    <li>Set the date range</li>
+                    <li>Set date range</li>
                     <li>Click <strong>Generate</strong></li>
-                    <li>Review the report results</li>
                 </ol>
             </div>
 
             <div class="card">
-                <h2>🔐 Security Guidelines</h2>
+                <div class="card-header">
+                    <h2><i class="fas fa-shield-alt"></i> Security Guidelines</h2>
+                </div>
                 <ul class="help-steps">
-                    <li>Never share your password with others</li>
-                    <li>Always log out when leaving your workstation</li>
-                    <li>Use strong passwords (minimum 8 characters)</li>
-                    <li>Report any suspicious activity to the administrator</li>
-                    <li>Do not leave your session open on shared computers</li>
+                    <li>Never share your password</li>
+                    <li>Always log out when leaving</li>
+                    <li>Use strong passwords</li>
+                    <li>Report suspicious activity</li>
+                    <li>Don't leave sessions open</li>
                 </ul>
             </div>
 
             <div class="card">
-                <h2>📞 Contact Support</h2>
-                <p>If you need additional assistance:</p>
+                <div class="card-header">
+                    <h2><i class="fas fa-headset"></i> Contact Support</h2>
+                </div>
                 <ul class="help-steps">
-                    <li><strong>System Administrator:</strong> admin@sunrisedental.com</li>
+                    <li><strong>Admin:</strong> admin@sunrisedental.com</li>
                     <li><strong>IT Support:</strong> +94-11-2345678 ext. 100</li>
-                    <li><strong>Working Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM</li>
+                    <li><strong>Hours:</strong> Mon-Fri, 8:00 AM - 5:00 PM</li>
                 </ul>
             </div>
         </div>

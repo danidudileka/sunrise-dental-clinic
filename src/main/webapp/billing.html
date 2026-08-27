@@ -5,64 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Billing - Sunrise Dental Clinic</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="app-container">
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="brand-icon">🦷</span>
-            <span class="brand-name">Sunrise Dental</span>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sunrise Dental</h2>
+            <p>Clinic Management System</p>
         </div>
 
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="dashboard.html" class="nav-link">
-                    <span class="nav-icon">📊</span>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="appointment.html" class="nav-link">
-                    <span class="nav-icon">📅</span>
-                    <span>Appointments</span>
-                </a>
-            </li>
-            <li class="nav-item active">
-                <a href="billing.html" class="nav-link">
-                    <span class="nav-icon">💳</span>
-                    <span>Billing</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="reports.html" class="nav-link">
-                    <span class="nav-icon">📈</span>
-                    <span>Reports</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="help.html" class="nav-link">
-                    <span class="nav-icon">❓</span>
-                    <span>Help</span>
-                </a>
-            </li>
-        </ul>
+        <nav class="sidebar-nav">
+            <ul id="sidebar-menu"></ul>
+        </nav>
 
-        <div class="nav-user">
-            <span id="user-name" class="user-name">Loading...</span>
-            <button id="logout-button" class="btn btn-sm btn-outline">Logout</button>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-name" id="sidebar-user-name">Loading...</span>
+                <span class="user-role" id="sidebar-user-role"></span>
+            </div>
+            <button id="logout-button" class="btn btn-outline btn-block">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
-    </nav>
+    </aside>
 
     <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
             <h1>Billing Management</h1>
-            <p class="text-muted">Generate bills and process payments</p>
+            <p>Generate bills and process payments</p>
         </div>
 
         <div class="card">
-            <h2>Generate Bill</h2>
+            <div class="card-header">
+                <h2>Generate Bill</h2>
+                <p>Enter appointment number to generate bill</p>
+            </div>
 
             <div id="billing-success" class="alert alert-success" style="display: none;"></div>
             <div id="billing-error" class="alert alert-error" style="display: none;"></div>
@@ -70,8 +50,12 @@
             <div class="search-box">
                 <input type="text" id="bill-appointment-number" class="form-control"
                        placeholder="Enter appointment number (e.g., APT202400001)">
-                <button onclick="calculateBill()" class="btn btn-secondary">Calculate</button>
-                <button onclick="generateBill()" class="btn btn-primary">Generate Bill</button>
+                <button onclick="calculateBill()" class="btn btn-secondary">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
+                <button onclick="generateBill()" class="btn btn-primary">
+                    <i class="fas fa-file-invoice"></i> Generate Bill
+                </button>
             </div>
 
             <!-- Bill Preview -->
@@ -84,9 +68,11 @@
 
                 <div class="bill-details">
                     <h3>Bill / Receipt</h3>
-                    <table class="table">
-                        <tbody id="bill-details-body"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody id="bill-details-body"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="bill-total">
@@ -104,11 +90,15 @@
                             <option value="ONLINE">Online Transfer</option>
                         </select>
                     </div>
-                    <button onclick="processPayment()" class="btn btn-success">Process Payment</button>
+                    <button onclick="processPayment()" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Process Payment
+                    </button>
                 </div>
 
                 <div class="bill-actions">
-                    <button onclick="printBill()" class="btn btn-secondary">Print Bill</button>
+                    <button onclick="printBill()" class="btn btn-secondary">
+                        <i class="fas fa-print"></i> Print Bill
+                    </button>
                 </div>
             </div>
         </div>

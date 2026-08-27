@@ -49,7 +49,6 @@ public class AppointmentService {
         this.treatmentDao = new TreatmentDao();
     }
 
-
     /**
      * Register new appointment with existing patient
      */
@@ -147,43 +146,6 @@ public class AppointmentService {
     }
 
     /**
-     * Validate appointment request
-     */
-    private void validateAppointmentRequest(AppointmentRequest request) {
-        Map<String, String> errors = new HashMap<>();
-
-        if (request == null) {
-            throw new ValidationException("Appointment request cannot be null");
-        }
-
-        if (request.getPatientCode() == null || request.getPatientCode().trim().isEmpty()) {
-            errors.put("patientCode", "Patient ID is required");
-        }
-
-        if (request.getDentistName() == null || request.getDentistName().trim().isEmpty()) {
-            errors.put("dentistName", "Dentist name is required");
-        }
-
-        if (request.getTreatmentType() == null || request.getTreatmentType().trim().isEmpty()) {
-            errors.put("treatmentType", "Treatment type is required");
-        }
-
-        if (request.getAppointmentDate() == null || !ValidationUtil.isValidDate(request.getAppointmentDate())) {
-            errors.put("appointmentDate", "Valid appointment date is required");
-        } else if (!ValidationUtil.isFutureDate(request.getAppointmentDate())) {
-            errors.put("appointmentDate", "Appointment date must be today or in the future");
-        }
-
-        if (request.getAppointmentTime() == null || !ValidationUtil.isValidTime(request.getAppointmentTime())) {
-            errors.put("appointmentTime", "Valid appointment time is required");
-        }
-
-        if (!errors.isEmpty()) {
-            throw new ValidationException("Validation failed", errors);
-        }
-    }
-
-    /**
      * Get appointment by appointment number
      */
     public AppointmentResponse getAppointmentByNumber(String appointmentNumber) {
@@ -220,6 +182,44 @@ public class AppointmentService {
      */
     public List<AppointmentResponse> getAppointmentsByPatient(int patientId) {
         List<Appointment> appointments = appointmentDao.findByPatientId(patientId);
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Search appointments by contact number
+     */
+    public List<AppointmentResponse> searchByContactNumber(String contactNumber) {
+        if (!ValidationUtil.isValidPhoneNumber(contactNumber)) {
+            throw new ValidationException("Invalid contact number format");
+        }
+
+        List<Appointment> appointments = appointmentDao.findByContactNumber(contactNumber);
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Search appointments by patient name
+     */
+    public List<AppointmentResponse> searchByPatientName(String patientName) {
+        if (patientName == null || patientName.trim().length() < 2) {
+            throw new ValidationException("Patient name must be at least 2 characters");
+        }
+
+        List<Appointment> appointments = appointmentDao.findByPatientName(patientName.trim());
+        return appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all appointments
+     */
+    public List<AppointmentResponse> getAllAppointments() {
+        List<Appointment> appointments = appointmentDao.findAllAppointments();
         return appointments.stream()
                 .map(this::mapToAppointmentResponse)
                 .collect(Collectors.toList());
@@ -267,20 +267,8 @@ public class AppointmentService {
             throw new ValidationException("Appointment request cannot be null");
         }
 
-        if (request.getPatientName() == null || !ValidationUtil.isValidName(request.getPatientName())) {
-            errors.put("patientName", "Valid patient name is required");
-        }
-
-        if (request.getAddress() != null && !ValidationUtil.isValidAddress(request.getAddress())) {
-            errors.put("address", "Address must be at least 5 characters");
-        }
-
-        if (request.getContactNumber() == null || !ValidationUtil.isValidPhoneNumber(request.getContactNumber())) {
-            errors.put("contactNumber", "Valid contact number is required");
-        }
-
-        if (request.getEmail() != null && !ValidationUtil.isValidEmail(request.getEmail())) {
-            errors.put("email", "Invalid email address");
+        if (request.getPatientCode() == null || request.getPatientCode().trim().isEmpty()) {
+            errors.put("patientCode", "Patient ID is required");
         }
 
         if (request.getDentistName() == null || request.getDentistName().trim().isEmpty()) {
@@ -337,43 +325,5 @@ public class AppointmentService {
                 .notes(appointment.getNotes())
                 .createdAt(appointment.getCreatedAt())
                 .build();
-    }
-
-    /**
-     * Search appointments by contact number
-     */
-    public List<AppointmentResponse> searchByContactNumber(String contactNumber) {
-        if (!ValidationUtil.isValidPhoneNumber(contactNumber)) {
-            throw new ValidationException("Invalid contact number format");
-        }
-
-        List<Appointment> appointments = appointmentDao.findByContactNumber(contactNumber);
-        return appointments.stream()
-                .map(this::mapToAppointmentResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Search appointments by patient name
-     */
-    public List<AppointmentResponse> searchByPatientName(String patientName) {
-        if (patientName == null || patientName.trim().length() < 2) {
-            throw new ValidationException("Patient name must be at least 2 characters");
-        }
-
-        List<Appointment> appointments = appointmentDao.findByPatientName(patientName.trim());
-        return appointments.stream()
-                .map(this::mapToAppointmentResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get all appointments
-     */
-    public List<AppointmentResponse> getAllAppointments() {
-        List<Appointment> appointments = appointmentDao.findAllAppointments();
-        return appointments.stream()
-                .map(this::mapToAppointmentResponse)
-                .collect(Collectors.toList());
     }
 }

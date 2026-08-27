@@ -5,17 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error - Sunrise Dental Clinic</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="error-container">
     <div class="error-box">
-        <div class="error-icon">⚠️</div>
-        <h1>Oops! Something went wrong. Try Again</h1>
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ffc107;"></i>
+        </div>
+        <h1>Oops! Something went wrong</h1>
         <p id="error-message">An unexpected error occurred. Please try again later.</p>
         <div class="error-actions">
-            <button onclick="goBack()" class="btn btn-primary">Go Back</button>
-            <button onclick="window.location.href = `/sunrise-dental-clinic/dashboard.html`;"> Dashboard</button>
-            <button onclick="window.location.href = `/sunrise-dental-clinic/login.html`;">Login</button>
+            <button onclick="goBack()" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </button>
+            <a href="dashboard.html" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="login.html" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
         </div>
     </div>
 </div>
@@ -25,7 +34,6 @@
         window.history.back();
     }
 
-    // Get error message from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const message = urlParams.get('message');
     if (message) {

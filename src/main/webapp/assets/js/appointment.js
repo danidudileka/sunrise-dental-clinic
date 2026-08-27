@@ -2,10 +2,11 @@
  * Appointment management functionality
  */
 
+let currentPatientCode = null;
 let currentAppointmentNumber = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Set minimum date for appointment date field
+    // Set minimum date
     const dateInput = document.getElementById('appointment-date');
     if (dateInput) {
         const today = new Date().toISOString().split('T')[0];
@@ -26,44 +27,82 @@ document.addEventListener('DOMContentLoaded', function() {
  * Show tab content
  */
 function showTab(tabName) {
-    // Hide all tabs
-    const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
+    document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
 
-    // Show selected tab
     document.getElementById(`${tabName}-tab`).classList.add('active');
 
-    // Update active button
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
 
-    // Load data if needed
-    if (tabName === 'list') {
+    if (tabName === 'today') {
         loadTodayAppointments();
     }
 }
 
 /**
- * Register new appointment
+ * Search patient for appointment
+ */
+async function searchPatientForAppointment() {
+    const patientCode = document.getElementById('patient-code').value;
+
+    if (!patientCode) {
+        showAlert('appointment-error', 'Please enter a patient ID', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiGet(`/patients/code/${patientCode}`);
+
+        if (response.status === 'SUCCESS') {
+            currentPatientCode = patientCode;
+            displayPatientInfo(response.data);
+            document.getElementById('appointment-form-section').style.display = 'block';
+            hideAlert('appointment-error');
+        }
+
+    } catch (error) {
+        showAlert('appointment-error', 'Invalid patient ID. Patient not found.', 'error');
+        document.getElementById('patient-info').style.display = 'none';
+        document.getElementById('appointment-form-section').style.display = 'none';
+    }
+}
+
+/**
+ * Display patient info
+ */
+function displayPatientInfo(patient) {
+    const infoBody = document.getElementById('patient-info-body');
+
+    infoBody.innerHTML = `
+        <tr><td><strong>Patient ID</strong></td><td>${patient.patientCode}</td></tr>
+        <tr><td><strong>Name</strong></td><td>${patient.patientName}</td></tr>
+        <tr><td><strong>Contact</strong></td><td>${patient.contactNumber}</td></tr>
+        <tr><td><strong>Email</strong></td><td>${patient.email || 'N/A'}</td></tr>
+    `;
+
+    document.getElementById('patient-info').style.display = 'block';
+}
+
+/**
+ * Register appointment
  */
 async function registerAppointment(e) {
     e.preventDefault();
 
-    // Clear previous messages
+    if (!currentPatientCode) {
+        showAlert('appointment-error', 'Please search for a patient first', 'error');
+        return;
+    }
+
     hideAlert('appointment-success');
     hideAlert('appointment-error');
 
-    // Gather form data
     const appointmentData = {
-        patientName: document.getElementById('patient-name').value,
-        address: document.getElementById('address').value,
-        contactNumber: document.getElementById('contact-number').value,
-        email: document.getElementById('email').value,
+        patientCode: currentPatientCode,
         dentistName: document.getElementById('dentist-name').value,
         treatmentType: document.getElementById('treatment-type').value,
         appointmentDate: document.getElementById('appointment-date').value,
@@ -71,9 +110,7 @@ async function registerAppointment(e) {
         notes: document.getElementById('notes').value
     };
 
-    // Validate required fields
-    if (!appointmentData.patientName || !appointmentData.contactNumber ||
-        !appointmentData.dentistName || !appointmentData.treatmentType ||
+    if (!appointmentData.dentistName || !appointmentData.treatmentType ||
         !appointmentData.appointmentDate || !appointmentData.appointmentTime) {
         showAlert('appointment-error', 'Please fill in all required fields', 'error');
         return;
@@ -89,6 +126,10 @@ async function registerAppointment(e) {
 
             // Reset form
             document.getElementById('appointment-form').reset();
+            document.getElementById('patient-code').value = '';
+            document.getElementById('patient-info').style.display = 'none';
+            document.getElementById('appointment-form-section').style.display = 'none';
+            currentPatientCode = null;
 
             // Reload today's appointments
             loadTodayAppointments();
@@ -100,108 +141,127 @@ async function registerAppointment(e) {
 }
 
 /**
- * Search appointment by number
+ * Change appointment search type
  */
-async function searchAppointment() {
-    const appointmentNumber = document.getElementById('search-appointment-number').value;
+function changeAppointmentSearchType() {
+    const searchType = document.getElementById('appointment-search-type').value;
+    const searchTerm = document.getElementById('appointment-search-term');
 
-    if (!appointmentNumber) {
-        showAlert('search-error', 'Please enter an appointment number', 'error');
-        return;
+    switch (searchType) {
+        case 'appointment':
+            searchTerm.placeholder = 'Enter appointment number (e.g., APT202400001)';
+            break;
+        case 'contact':
+            searchTerm.placeholder = 'Enter contact number (e.g., +94-77-1234567)';
+            break;
+        case 'name':
+            searchTerm.placeholder = 'Enter patient name (e.g., John)';
+            break;
+        case 'date':
+            searchTerm.placeholder = 'Enter date (e.g., 2024-03-15)';
+            searchTerm.type = 'date';
+            break;
+        case 'all':
+            searchTerm.placeholder = 'Click search to load all appointments';
+            searchTerm.type = 'text';
+            searchTerm.disabled = true;
+            break;
+        default:
+            searchTerm.type = 'text';
+            searchTerm.disabled = false;
     }
 
-    try {
-        const response = await apiGet(`/appointments/number/${appointmentNumber}`);
+    if (searchType !== 'all' && searchType !== 'date') {
+        searchTerm.type = 'text';
+        searchTerm.disabled = false;
+    }
+}
 
-        if (response.status === 'SUCCESS') {
-            displayAppointmentDetails(response.data);
-            currentAppointmentNumber = appointmentNumber;
+/**
+ * Search appointments
+ */
+async function searchAppointments() {
+    const searchType = document.getElementById('appointment-search-type').value;
+    const searchTerm = document.getElementById('appointment-search-term').value;
+
+    hideAlert('search-error');
+
+    try {
+        let response;
+
+        switch (searchType) {
+            case 'appointment':
+                if (!searchTerm) {
+                    showAlert('search-error', 'Please enter an appointment number', 'error');
+                    return;
+                }
+                response = await apiGet(`/appointments/number/${searchTerm}`);
+                if (response.status === 'SUCCESS') {
+                    displaySingleAppointment(response.data);
+                }
+                break;
+
+            case 'contact':
+                if (!searchTerm) {
+                    showAlert('search-error', 'Please enter a contact number', 'error');
+                    return;
+                }
+                response = await apiGet(`/appointments/contact/${encodeURIComponent(searchTerm)}`);
+                if (response.status === 'SUCCESS') {
+                    displayAppointmentsList(response.data);
+                }
+                break;
+
+            case 'name':
+                if (!searchTerm || searchTerm.length < 2) {
+                    showAlert('search-error', 'Please enter at least 2 characters', 'error');
+                    return;
+                }
+                response = await apiGet(`/appointments/name/${encodeURIComponent(searchTerm)}`);
+                if (response.status === 'SUCCESS') {
+                    displayAppointmentsList(response.data);
+                }
+                break;
+
+            case 'date':
+                if (!searchTerm) {
+                    showAlert('search-error', 'Please select a date', 'error');
+                    return;
+                }
+                response = await apiGet(`/appointments/date/${searchTerm}`);
+                if (response.status === 'SUCCESS') {
+                    displayAppointmentsList(response.data);
+                }
+                break;
+
+            case 'all':
+                response = await apiGet('/appointments/all');
+                if (response.status === 'SUCCESS') {
+                    displayAppointmentsList(response.data);
+                }
+                break;
         }
 
     } catch (error) {
         showAlert('search-error', error.message, 'error');
-        document.getElementById('appointment-details').style.display = 'none';
     }
 }
 
 /**
- * Display appointment details
+ * Display single appointment details
  */
-function displayAppointmentDetails(appointment) {
-    const detailsBody = document.getElementById('appointment-details-body');
+function displaySingleAppointment(appointment) {
+    const listContainer = document.getElementById('appointments-list');
+    const tableBody = document.getElementById('appointments-list-body');
 
-    const rows = [
-        ['Appointment Number', appointment.appointmentNumber],
-        ['Patient Name', appointment.patientName],
-        ['Contact Number', appointment.contactNumber],
-        ['Dentist', appointment.dentistName],
-        ['Treatment', appointment.treatmentType],
-        ['Treatment Cost', formatCurrency(appointment.treatmentCost)],
-        ['Consultation Fee', formatCurrency(appointment.consultationFee)],
-        ['Date', formatDate(appointment.appointmentDate)],
-        ['Time', formatTime(appointment.appointmentTime)],
-        ['Status', appointment.status]
-    ];
-
-    if (appointment.notes) {
-        rows.push(['Notes', appointment.notes]);
-    }
-
-    detailsBody.innerHTML = rows.map(([label, value]) => `
-        <tr>
-            <td><strong>${label}</strong></td>
-            <td>${value || 'N/A'}</td>
-        </tr>
-    `).join('');
-
-    document.getElementById('appointment-details').style.display = 'block';
-}
-
-/**
- * Load today's appointments
- */
-async function loadTodayAppointments() {
-    const today = new Date().toISOString().split('T')[0];
-
-    try {
-        const response = await apiGet(`/appointments/date/${today}`);
-
-        if (response.status === 'SUCCESS') {
-            displayTodayAppointments(response.data);
-        }
-
-    } catch (error) {
-        console.error('Error loading today\'s appointments:', error);
-        document.getElementById('today-appointments-body').innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center">Error loading appointments</td>
-            </tr>
-        `;
-    }
-}
-
-/**
- * Display today's appointments
- */
-function displayTodayAppointments(appointments) {
-    const tableBody = document.getElementById('today-appointments-body');
-
-    if (!appointments || appointments.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center">No appointments for today</td>
-            </tr>
-        `;
-        return;
-    }
-
-    tableBody.innerHTML = appointments.map(appointment => `
+    tableBody.innerHTML = `
         <tr>
             <td>${appointment.appointmentNumber}</td>
             <td>${appointment.patientName}</td>
             <td>${appointment.contactNumber}</td>
             <td>${appointment.dentistName}</td>
             <td>${appointment.treatmentType}</td>
+            <td>${formatDate(appointment.appointmentDate)}</td>
             <td>${formatTime(appointment.appointmentTime)}</td>
             <td>
                 <span class="status-badge status-${appointment.status.toLowerCase()}">
@@ -209,249 +269,15 @@ function displayTodayAppointments(appointments) {
                 </span>
             </td>
             <td>
-                <button onclick="viewAppointment('${appointment.appointmentNumber}')" 
-                        class="btn btn-sm btn-secondary">View</button>
+                <button onclick="viewAppointmentActions('${appointment.appointmentNumber}')" 
+                        class="btn btn-sm btn-secondary">
+                    <i class="fas fa-eye"></i> View
+                </button>
             </td>
         </tr>
-    `).join('');
-}
+    `;
 
-/**
- * View appointment details
- */
-function viewAppointment(appointmentNumber) {
-    document.getElementById('search-appointment-number').value = appointmentNumber;
-    showTab('search');
-    searchAppointment();
-}
-
-/**
- * Complete appointment
- */
-async function completeAppointment() {
-    if (!currentAppointmentNumber) {
-        showAlert('search-error', 'No appointment selected', 'error');
-        return;
-    }
-
-    if (!confirm('Mark this appointment as completed?')) {
-        return;
-    }
-
-    try {
-        const response = await apiPost('/appointments/complete', {
-            appointmentNumber: currentAppointmentNumber
-        });
-
-        if (response.status === 'SUCCESS') {
-            showAlert('search-error', 'Appointment completed successfully', 'success');
-            searchAppointment();
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * Cancel appointment
- */
-async function cancelAppointment() {
-    if (!currentAppointmentNumber) {
-        showAlert('search-error', 'No appointment selected', 'error');
-        return;
-    }
-
-    if (!confirm('Cancel this appointment?')) {
-        return;
-    }
-
-    try {
-        const response = await apiPost('/appointments/cancel', {
-            appointmentNumber: currentAppointmentNumber
-        });
-
-        if (response.status === 'SUCCESS') {
-            showAlert('search-error', 'Appointment cancelled successfully', 'success');
-            searchAppointment();
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * View bill for appointment
- */
-function viewBill() {
-    if (currentAppointmentNumber) {
-        window.location.href = `/billing.html?appointment=${currentAppointmentNumber}`;
-    }
-}
-
-/**
- * Change search type
- */
-function changeSearchType() {
-    const searchType = document.getElementById('search-type').value;
-
-    // Hide all search containers
-    document.getElementById('search-input-container').style.display = 'none';
-    document.getElementById('date-search-container').style.display = 'none';
-    document.getElementById('all-search-container').style.display = 'none';
-    document.getElementById('appointment-details').style.display = 'none';
-    document.getElementById('appointments-list').style.display = 'none';
-
-    // Show relevant container
-    if (searchType === 'all') {
-        document.getElementById('all-search-container').style.display = 'block';
-        loadAllAppointments();
-    } else if (searchType === 'date') {
-        document.getElementById('date-search-container').style.display = 'flex';
-        // Set default date to today
-        document.getElementById('search-date').value = new Date().toISOString().split('T')[0];
-    } else {
-        document.getElementById('search-input-container').style.display = 'flex';
-
-        // Update placeholder based on search type
-        const input = document.getElementById('search-appointment-number');
-        if (searchType === 'appointment') {
-            input.placeholder = 'Enter appointment number (e.g., APT202400001)';
-        } else if (searchType === 'contact') {
-            input.placeholder = 'Enter contact number (e.g., +94-77-1234567)';
-        } else if (searchType === 'name') {
-            input.placeholder = 'Enter patient name (e.g., John)';
-        }
-    }
-}
-
-/**
- * Search appointment (main search function)
- */
-async function searchAppointment() {
-    const searchType = document.getElementById('search-type').value;
-
-    switch (searchType) {
-        case 'appointment':
-            await searchByAppointmentNumber();
-            break;
-        case 'contact':
-            await searchByContactNumber();
-            break;
-        case 'name':
-            await searchByPatientName();
-            break;
-    }
-}
-
-/**
- * Search by appointment number
- */
-async function searchByAppointmentNumber() {
-    const appointmentNumber = document.getElementById('search-appointment-number').value;
-
-    if (!appointmentNumber) {
-        showAlert('search-error', 'Please enter an appointment number', 'error');
-        return;
-    }
-
-    try {
-        const response = await apiGet(`/appointments/number/${appointmentNumber}`);
-
-        if (response.status === 'SUCCESS') {
-            displayAppointmentDetails(response.data);
-            currentAppointmentNumber = appointmentNumber;
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * Search by contact number
- */
-async function searchByContactNumber() {
-    const contactNumber = document.getElementById('search-appointment-number').value;
-
-    if (!contactNumber) {
-        showAlert('search-error', 'Please enter a contact number', 'error');
-        return;
-    }
-
-    try {
-        const response = await apiGet(`/appointments/contact/${encodeURIComponent(contactNumber)}`);
-
-        if (response.status === 'SUCCESS') {
-            displayAppointmentsList(response.data);
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * Search by patient name
- */
-async function searchByPatientName() {
-    const patientName = document.getElementById('search-appointment-number').value;
-
-    if (!patientName || patientName.length < 2) {
-        showAlert('search-error', 'Please enter at least 2 characters', 'error');
-        return;
-    }
-
-    try {
-        const response = await apiGet(`/appointments/name/${encodeURIComponent(patientName)}`);
-
-        if (response.status === 'SUCCESS') {
-            displayAppointmentsList(response.data);
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * Search by date
- */
-async function searchByDate() {
-    const date = document.getElementById('search-date').value;
-
-    if (!date) {
-        showAlert('search-error', 'Please select a date', 'error');
-        return;
-    }
-
-    try {
-        const response = await apiGet(`/appointments/date/${date}`);
-
-        if (response.status === 'SUCCESS') {
-            displayAppointmentsList(response.data);
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
-}
-
-/**
- * Load all appointments
- */
-async function loadAllAppointments() {
-    try {
-        const response = await apiGet('/appointments/all');
-
-        if (response.status === 'SUCCESS') {
-            displayAppointmentsList(response.data);
-        }
-
-    } catch (error) {
-        showAlert('search-error', error.message, 'error');
-    }
+    listContainer.style.display = 'block';
 }
 
 /**
@@ -461,13 +287,9 @@ function displayAppointmentsList(appointments) {
     const listContainer = document.getElementById('appointments-list');
     const tableBody = document.getElementById('appointments-list-body');
 
-    document.getElementById('appointment-details').style.display = 'none';
-
     if (!appointments || appointments.length === 0) {
         tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center">No appointments found</td>
-            </tr>
+            <tr><td colspan="9" class="text-center">No appointments found</td></tr>
         `;
         listContainer.style.display = 'block';
         return;
@@ -488,8 +310,10 @@ function displayAppointmentsList(appointments) {
                 </span>
             </td>
             <td>
-                <button onclick="viewAppointmentDetails('${appointment.appointmentNumber}')" 
-                        class="btn btn-sm btn-secondary">View</button>
+                <button onclick="viewAppointmentActions('${appointment.appointmentNumber}')" 
+                        class="btn btn-sm btn-secondary">
+                    <i class="fas fa-eye"></i> View
+                </button>
             </td>
         </tr>
     `).join('');
@@ -498,19 +322,106 @@ function displayAppointmentsList(appointments) {
 }
 
 /**
- * View appointment details from list
+ * View appointment actions
  */
-async function viewAppointmentDetails(appointmentNumber) {
+function viewAppointmentActions(appointmentNumber) {
+    currentAppointmentNumber = appointmentNumber;
+
+    if (confirm('What would you like to do?\n\nOK - Complete appointment\nCancel - Cancel appointment')) {
+        completeAppointment(appointmentNumber);
+    } else if (confirm('Cancel this appointment?')) {
+        cancelAppointment(appointmentNumber);
+    }
+}
+
+/**
+ * Complete appointment
+ */
+async function completeAppointment(appointmentNumber) {
     try {
-        const response = await apiGet(`/appointments/number/${appointmentNumber}`);
+        const response = await apiPost('/appointments/complete', {
+            appointmentNumber: appointmentNumber
+        });
 
         if (response.status === 'SUCCESS') {
-            displayAppointmentDetails(response.data);
-            currentAppointmentNumber = appointmentNumber;
-            document.getElementById('appointments-list').style.display = 'none';
+            showAlert('search-error', 'Appointment completed successfully', 'success');
+            searchAppointments();
         }
 
     } catch (error) {
         showAlert('search-error', error.message, 'error');
     }
+}
+
+/**
+ * Cancel appointment
+ */
+async function cancelAppointment(appointmentNumber) {
+    try {
+        const response = await apiPost('/appointments/cancel', {
+            appointmentNumber: appointmentNumber
+        });
+
+        if (response.status === 'SUCCESS') {
+            showAlert('search-error', 'Appointment cancelled successfully', 'success');
+            searchAppointments();
+        }
+
+    } catch (error) {
+        showAlert('search-error', error.message, 'error');
+    }
+}
+
+/**
+ * Load today's appointments
+ */
+async function loadTodayAppointments() {
+    const today = new Date().toISOString().split('T')[0];
+
+    try {
+        const response = await apiGet(`/appointments/date/${today}`);
+
+        if (response.status === 'SUCCESS') {
+            displayTodayAppointments(response.data);
+        }
+
+    } catch (error) {
+        console.error('Error loading today\'s appointments:', error);
+    }
+}
+
+/**
+ * Display today's appointments
+ */
+function displayTodayAppointments(appointments) {
+    const tableBody = document.getElementById('today-appointments-body');
+
+    if (!appointments || appointments.length === 0) {
+        tableBody.innerHTML = `
+            <tr><td colspan="8" class="text-center">No appointments for today</td></tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = appointments.map(appointment => `
+        <tr>
+            <td>${appointment.appointmentNumber}</td>
+            <td>${appointment.patientName}</td>
+            <td>${appointment.contactNumber}</td>
+            <td>${appointment.dentistName}</td>
+            <td>${appointment.treatmentType}</td>
+            <td>${formatTime(appointment.appointmentTime)}</td>
+            <td>
+                <span class="status-badge status-${appointment.status.toLowerCase()}">
+                    ${appointment.status}
+                </span>
+            </td>
+            <td>
+                <button onclick="viewAppointmentActions('${appointment.appointmentNumber}')" 
+                        class="btn btn-sm btn-secondary">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </td>
+        </tr>
+    `).join('');
 }
