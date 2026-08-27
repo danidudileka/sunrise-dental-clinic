@@ -142,25 +142,6 @@ public class PatientDao extends BaseDao {
         }
     }
 
-    /**
-     * Create new patient
-     */
-    public int createPatient(Patient patient) {
-        String sql = "INSERT INTO patients (patient_name, address, contact_number, email, " +
-                "date_of_birth, gender, blood_group, medical_history) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-        return executeUpdateWithGeneratedKey(sql,
-                patient.getPatientName(),
-                patient.getAddress(),
-                patient.getContactNumber(),
-                patient.getEmail(),
-                patient.getDateOfBirth(),
-                patient.getGender(),
-                patient.getBloodGroup(),
-                patient.getMedicalHistory()
-        );
-    }
 
     /**
      * Update patient
@@ -256,11 +237,94 @@ public class PatientDao extends BaseDao {
     }
 
     /**
-     * Map ResultSet to Patient object
+     * Generate next patient code (P001, P002, etc.)
+     */
+    public String generateNextPatientCode() {
+        String sql = "SELECT CONCAT('P', LPAD(COALESCE(MAX(CAST(SUBSTRING(patient_code, 2) AS UNSIGNED)), 0) + 1, 3, '0')) " +
+                "FROM patients";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getString(1);
+            }
+
+            return "P001";
+
+        } catch (SQLException e) {
+            logger.error("Error generating patient code", e);
+            throw new DatabaseException("Failed to generate patient code", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Find patient by patient code
+     */
+    public Optional<Patient> findByPatientCode(String patientCode) {
+        String sql = "SELECT * FROM patients WHERE patient_code = ?";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, patientCode);
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return Optional.of(mapPatient(resultSet));
+            }
+
+            return Optional.empty();
+
+        } catch (SQLException e) {
+            logger.error("Error finding patient by code: {}", patientCode, e);
+            throw new DatabaseException("Failed to retrieve patient", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Update createPatient to include patient_code
+     */
+    public int createPatient(Patient patient) {
+        String sql = "INSERT INTO patients (patient_code, patient_name, address, contact_number, email, " +
+                "date_of_birth, gender, blood_group, medical_history) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        return executeUpdateWithGeneratedKey(sql,
+                patient.getPatientCode(),
+                patient.getPatientName(),
+                patient.getAddress(),
+                patient.getContactNumber(),
+                patient.getEmail(),
+                patient.getDateOfBirth(),
+                patient.getGender(),
+                patient.getBloodGroup(),
+                patient.getMedicalHistory()
+        );
+    }
+
+    /**
+     * Update mapPatient to include patient_code
      */
     private Patient mapPatient(ResultSet rs) throws SQLException {
         return Patient.builder()
                 .patientId(rs.getInt("patient_id"))
+                .patientCode(rs.getString("patient_code"))
                 .patientName(rs.getString("patient_name"))
                 .address(rs.getString("address"))
                 .contactNumber(rs.getString("contact_number"))

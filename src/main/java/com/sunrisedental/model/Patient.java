@@ -8,15 +8,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Entity class representing a patient.
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Patient {
     private int patientId;
+    private String patientCode;  // Auto-generated: P001, P002, etc.
     private String patientName;
     private String address;
     private String contactNumber;

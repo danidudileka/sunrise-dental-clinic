@@ -3,14 +3,13 @@ package com.sunrisedental.dao;
 import com.sunrisedental.exception.DatabaseException;
 import com.sunrisedental.model.Appointment;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * DAO class for Appointment entity.
@@ -360,6 +359,18 @@ public class AppointmentDao extends BaseDao {
     private Appointment mapAppointmentWithDetails(ResultSet rs) throws SQLException {
         Appointment appointment = mapAppointment(rs);
 
+        try {
+            appointment.setPatientName(rs.getString("patient_name"));
+        } catch (SQLException e) {
+            // Column not in result set
+        }
+
+        try {
+            appointment.setPatientCode(rs.getString("patient_code"));
+        } catch (SQLException e) {
+            // Column not in result set
+        }
+
         // Set joined fields
         try {
             appointment.setPatientName(rs.getString("patient_name"));
@@ -536,4 +547,159 @@ public class AppointmentDao extends BaseDao {
             closeResources(connection, statement, resultSet);
         }
     }
+    /**
+     * Get appointments by dentist ID
+     */
+    public List<Appointment> findByDentistId(int dentistId) {
+        String sql = "SELECT a.*, p.patient_name, p.contact_number as patient_contact, " +
+                "p.address, p.email, p.patient_code, d.name as dentist_name, " +
+                "t.treatment_name, t.base_cost as treatment_cost " +
+                "FROM appointments a " +
+                "INNER JOIN patients p ON a.patient_id = p.patient_id " +
+                "INNER JOIN dentists d ON a.dentist_id = d.dentist_id " +
+                "INNER JOIN treatments t ON a.treatment_id = t.treatment_id " +
+                "WHERE a.dentist_id = ? " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, dentistId);
+
+            resultSet = statement.executeQuery();
+
+            List<Appointment> appointments = new ArrayList<>();
+            while (resultSet.next()) {
+                appointments.add(mapAppointmentWithDetails(resultSet));
+            }
+
+            return appointments;
+
+        } catch (SQLException e) {
+            logger.error("Error finding appointments by dentist ID: {}", dentistId, e);
+            throw new DatabaseException("Failed to retrieve appointments", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Get completed appointments revenue by dentist
+     */
+    public BigDecimal getCompletedRevenueByDentist(int dentistId) {
+        String sql = "SELECT COALESCE(SUM(b.total_amount), 0) " +
+                "FROM bills b " +
+                "INNER JOIN appointments a ON b.appointment_id = a.appointment_id " +
+                "WHERE a.dentist_id = ? AND a.status = 'COMPLETED' " +
+                "AND b.payment_status = 'PAID'";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, dentistId);
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getBigDecimal(1);
+            }
+
+            return BigDecimal.ZERO;
+
+        } catch (SQLException e) {
+            logger.error("Error getting completed revenue for dentist: {}", dentistId, e);
+            throw new DatabaseException("Failed to get revenue", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Get upcoming appointments revenue by dentist
+     */
+    public BigDecimal getUpcomingRevenueByDentist(int dentistId) {
+        String sql = "SELECT COALESCE(SUM(t.base_cost + a.consultation_fee), 0) " +
+                "FROM appointments a " +
+                "INNER JOIN treatments t ON a.treatment_id = t.treatment_id " +
+                "WHERE a.dentist_id = ? AND a.status = 'SCHEDULED' " +
+                "AND a.appointment_date >= CURDATE()";
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, dentistId);
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getBigDecimal(1);
+            }
+
+            return BigDecimal.ZERO;
+
+        } catch (SQLException e) {
+            logger.error("Error getting upcoming revenue for dentist: {}", dentistId, e);
+            throw new DatabaseException("Failed to get revenue", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
+    /**
+     * Get unique patients by dentist
+     */
+    public List<Map<String, Object>> findPatientsByDentistId(int dentistId) {
+        String sql = "SELECT DISTINCT p.patient_id, p.patient_code, p.patient_name, " +
+                "p.contact_number, p.email, p.address " +
+                "FROM patients p " +
+                "INNER JOIN appointments a ON p.patient_id = a.patient_id " +
+                "WHERE a.dentist_id = ? " +
+                "ORDER BY p.patient_name";
+
+        List<Map<String, Object>> patients = new ArrayList<>();
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, dentistId);
+
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Map<String, Object> patient = new HashMap<>();
+                patient.put("patientId", resultSet.getInt("patient_id"));
+                patient.put("patientCode", resultSet.getString("patient_code"));
+                patient.put("patientName", resultSet.getString("patient_name"));
+                patient.put("contactNumber", resultSet.getString("contact_number"));
+                patient.put("email", resultSet.getString("email"));
+                patient.put("address", resultSet.getString("address"));
+                patients.add(patient);
+            }
+
+            return patients;
+
+        } catch (SQLException e) {
+            logger.error("Error finding patients by dentist ID: {}", dentistId, e);
+            throw new DatabaseException("Failed to retrieve patients", e);
+        } finally {
+            closeResources(connection, statement, resultSet);
+        }
+    }
+
 }

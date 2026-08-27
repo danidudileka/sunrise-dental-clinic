@@ -31,6 +31,7 @@ public class Appointment {
     private int createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String patientCode;
 
     // Additional fields for joined queries
     private String patientName;

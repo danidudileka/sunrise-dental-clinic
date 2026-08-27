@@ -1,18 +1,21 @@
 package com.sunrisedental.service;
 
+import com.sunrisedental.dao.AppointmentDao;
 import com.sunrisedental.dao.PatientDao;
 import com.sunrisedental.dto.request.PatientRequest;
+import com.sunrisedental.dto.response.AppointmentResponse;
 import com.sunrisedental.dto.response.PatientResponse;
 import com.sunrisedental.exception.NotFoundException;
 import com.sunrisedental.exception.ValidationException;
+import com.sunrisedental.model.Appointment;
 import com.sunrisedental.model.Patient;
 import com.sunrisedental.util.DateUtil;
+import com.sunrisedental.util.EmailUtil;
 import com.sunrisedental.util.ValidationUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +29,11 @@ import java.util.stream.Collectors;
 public class PatientService {
     private static final Logger logger = LogManager.getLogger(PatientService.class);
     private final PatientDao patientDao;
+    private final AppointmentDao appointmentDao;
 
     public PatientService() {
         this.patientDao = new PatientDao();
+        this.appointmentDao = new AppointmentDao();
     }
 
     /**
@@ -41,11 +46,16 @@ public class PatientService {
         // Check for existing patient
         Optional<Patient> existingPatient = patientDao.findByContactNumber(request.getContactNumber());
         if (existingPatient.isPresent()) {
-            throw new ValidationException("Patient with this contact number already exists");
+            throw new ValidationException("Patient with this contact number already exists. Patient ID: " +
+                    existingPatient.get().getPatientCode());
         }
+
+        // Generate patient code
+        String patientCode = patientDao.generateNextPatientCode();
 
         // Create new patient
         Patient patient = Patient.builder()
+                .patientCode(patientCode)
                 .patientName(request.getPatientName())
                 .address(request.getAddress())
                 .contactNumber(request.getContactNumber())
@@ -57,10 +67,36 @@ public class PatientService {
                 .build();
 
         int patientId = patientDao.createPatient(patient);
-        logger.info("Created new patient with ID: {}", patientId);
+        logger.info("Created new patient with ID: {} and Code: {}", patientId, patientCode);
+
+        // Send email if provided
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            try {
+                EmailUtil.sendPatientRegistrationEmail(
+                        request.getEmail(),
+                        request.getPatientName(),
+                        patientCode
+                );
+            } catch (Exception e) {
+                logger.error("Error sending registration email", e);
+            }
+        }
 
         // Return patient response
-        return getPatientById(patientId);
+        return getPatientByCode(patientCode);
+    }
+
+    /**
+     * Get patient by code
+     */
+    public PatientResponse getPatientByCode(String patientCode) {
+        Optional<Patient> patientOptional = patientDao.findByPatientCode(patientCode);
+
+        if (patientOptional.isEmpty()) {
+            throw new NotFoundException("Patient", patientCode);
+        }
+
+        return mapToPatientResponse(patientOptional.get());
     }
 
     /**
@@ -114,48 +150,28 @@ public class PatientService {
     }
 
     /**
-     * Update patient information
+     * Get patient with appointment history
      */
-    public PatientResponse updatePatient(int patientId, PatientRequest request) {
-        Optional<Patient> patientOptional = patientDao.findById(patientId);
+    public Map<String, Object> getPatientWithAppointments(String patientCode) {
+        PatientResponse patient = getPatientByCode(patientCode);
 
+        // Get patient ID from response
+        Optional<Patient> patientOptional = patientDao.findByPatientCode(patientCode);
         if (patientOptional.isEmpty()) {
-            throw new NotFoundException("Patient", String.valueOf(patientId));
+            throw new NotFoundException("Patient", patientCode);
         }
 
-        validatePatientRequest(request);
+        List<Appointment> appointments = appointmentDao.findByPatientId(patientOptional.get().getPatientId());
 
-        Patient patient = patientOptional.get();
-        patient.setPatientName(request.getPatientName());
-        patient.setAddress(request.getAddress());
-        patient.setContactNumber(request.getContactNumber());
-        patient.setEmail(request.getEmail());
-        patient.setDateOfBirth(DateUtil.parseDate(request.getDateOfBirth()));
-        patient.setGender(request.getGender());
-        patient.setBloodGroup(request.getBloodGroup());
-        patient.setMedicalHistory(request.getMedicalHistory());
+        List<AppointmentResponse> appointmentResponses = appointments.stream()
+                .map(this::mapToAppointmentResponse)
+                .collect(Collectors.toList());
 
-        boolean updated = patientDao.updatePatient(patient);
+        Map<String, Object> result = new HashMap<>();
+        result.put("patient", patient);
+        result.put("appointments", appointmentResponses);
 
-        if (updated) {
-            logger.info("Updated patient with ID: {}", patientId);
-            return getPatientById(patientId);
-        }
-
-        throw new ValidationException("Failed to update patient");
-    }
-
-    /**
-     * Deactivate patient
-     */
-    public boolean deactivatePatient(int patientId) {
-        Optional<Patient> patientOptional = patientDao.findById(patientId);
-
-        if (patientOptional.isEmpty()) {
-            throw new NotFoundException("Patient", String.valueOf(patientId));
-        }
-
-        return patientDao.deactivatePatient(patientId);
+        return result;
     }
 
     /**
@@ -199,6 +215,7 @@ public class PatientService {
     private PatientResponse mapToPatientResponse(Patient patient) {
         return PatientResponse.builder()
                 .patientId(patient.getPatientId())
+                .patientCode(patient.getPatientCode())
                 .patientName(patient.getPatientName())
                 .address(patient.getAddress())
                 .contactNumber(patient.getContactNumber())
@@ -208,6 +225,27 @@ public class PatientService {
                 .bloodGroup(patient.getBloodGroup())
                 .medicalHistory(patient.getMedicalHistory())
                 .createdAt(patient.getCreatedAt())
+                .build();
+    }
+
+    /**
+     * Map Appointment to AppointmentResponse
+     */
+    private AppointmentResponse mapToAppointmentResponse(Appointment appointment) {
+        return AppointmentResponse.builder()
+                .appointmentId(appointment.getAppointmentId())
+                .appointmentNumber(appointment.getAppointmentNumber())
+                .patientName(appointment.getPatientName())
+                .contactNumber(appointment.getPatientContactNumber())
+                .dentistName(appointment.getDentistName())
+                .treatmentType(appointment.getTreatmentName())
+                .treatmentCost(appointment.getTreatmentCost())
+                .appointmentDate(appointment.getAppointmentDate())
+                .appointmentTime(appointment.getAppointmentTime())
+                .consultationFee(appointment.getConsultationFee())
+                .status(appointment.getStatus())
+                .notes(appointment.getNotes())
+                .createdAt(appointment.getCreatedAt())
                 .build();
     }
 }

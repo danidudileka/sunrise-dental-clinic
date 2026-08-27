@@ -49,12 +49,26 @@ public class AppointmentService {
         this.treatmentDao = new TreatmentDao();
     }
 
+
     /**
-     * Register new appointment
+     * Register new appointment with existing patient
      */
     public AppointmentResponse registerAppointment(AppointmentRequest request, int createdBy) {
         // Validate request
         validateAppointmentRequest(request);
+
+        // Find patient by patient code
+        String patientCode = request.getPatientCode();
+        if (patientCode == null || patientCode.trim().isEmpty()) {
+            throw new ValidationException("Patient ID is required");
+        }
+
+        Optional<Patient> patientOptional = patientDao.findByPatientCode(patientCode);
+        if (patientOptional.isEmpty()) {
+            throw new ValidationException("Invalid Patient ID. Patient not found.");
+        }
+
+        int patientId = patientOptional.get().getPatientId();
 
         // Check if appointment number is unique
         String appointmentNumber = request.getAppointmentNumber();
@@ -64,26 +78,6 @@ public class AppointmentService {
             if (appointmentDao.existsByAppointmentNumber(appointmentNumber)) {
                 throw new ValidationException("Appointment number already exists");
             }
-        }
-
-        // Get or create patient
-        int patientId;
-        Optional<Patient> patientOptional = patientDao.findByContactNumber(request.getContactNumber());
-
-        if (patientOptional.isPresent()) {
-            patientId = patientOptional.get().getPatientId();
-            logger.debug("Using existing patient with ID: {}", patientId);
-        } else {
-            // Create new patient
-            Patient newPatient = Patient.builder()
-                    .patientName(request.getPatientName())
-                    .address(request.getAddress())
-                    .contactNumber(request.getContactNumber())
-                    .email(request.getEmail())
-                    .build();
-
-            patientId = patientDao.createPatient(newPatient);
-            logger.info("Created new patient with ID: {}", patientId);
         }
 
         // Get dentist
@@ -124,16 +118,16 @@ public class AppointmentService {
                 .createdBy(createdBy)
                 .build();
 
-
         int appointmentId = appointmentDao.createAppointment(appointment);
         logger.info("Created appointment with ID: {} and number: {}", appointmentId, appointmentNumber);
 
-// Send email confirmation if patient email is provided
-        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+        // Send email confirmation if patient has email
+        Patient patient = patientOptional.get();
+        if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
             try {
                 boolean emailSent = EmailUtil.sendAppointmentConfirmation(
-                        request.getEmail(),
-                        request.getPatientName(),
+                        patient.getEmail(),
+                        patient.getPatientName(),
                         appointmentNumber,
                         request.getDentistName(),
                         request.getTreatmentType(),
@@ -142,18 +136,51 @@ public class AppointmentService {
                 );
 
                 if (emailSent) {
-                    logger.info("Appointment confirmation email sent to: {}", request.getEmail());
-                } else {
-                    logger.warn("Failed to send confirmation email to: {}", request.getEmail());
+                    logger.info("Appointment confirmation email sent to: {}", patient.getEmail());
                 }
             } catch (Exception e) {
                 logger.error("Error sending confirmation email", e);
-                // Don't fail the appointment registration if email fails
             }
         }
 
-        // Return appointment response
         return getAppointmentByNumber(appointmentNumber);
+    }
+
+    /**
+     * Validate appointment request
+     */
+    private void validateAppointmentRequest(AppointmentRequest request) {
+        Map<String, String> errors = new HashMap<>();
+
+        if (request == null) {
+            throw new ValidationException("Appointment request cannot be null");
+        }
+
+        if (request.getPatientCode() == null || request.getPatientCode().trim().isEmpty()) {
+            errors.put("patientCode", "Patient ID is required");
+        }
+
+        if (request.getDentistName() == null || request.getDentistName().trim().isEmpty()) {
+            errors.put("dentistName", "Dentist name is required");
+        }
+
+        if (request.getTreatmentType() == null || request.getTreatmentType().trim().isEmpty()) {
+            errors.put("treatmentType", "Treatment type is required");
+        }
+
+        if (request.getAppointmentDate() == null || !ValidationUtil.isValidDate(request.getAppointmentDate())) {
+            errors.put("appointmentDate", "Valid appointment date is required");
+        } else if (!ValidationUtil.isFutureDate(request.getAppointmentDate())) {
+            errors.put("appointmentDate", "Appointment date must be today or in the future");
+        }
+
+        if (request.getAppointmentTime() == null || !ValidationUtil.isValidTime(request.getAppointmentTime())) {
+            errors.put("appointmentTime", "Valid appointment time is required");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new ValidationException("Validation failed", errors);
+        }
     }
 
     /**
