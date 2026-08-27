@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for patient operations.
@@ -47,46 +48,6 @@ public class PatientController extends BaseController {
                     sendError(response, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
                     break;
             }
-        } catch (Exception e) {
-            handleException(request, response, e);
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        if (!isAuthenticated(request)) {
-            handleException(request, response, new AuthenticationException("User not authenticated"));
-            return;
-        }
-
-        String pathInfo = getPathInfo(request);
-
-        try {
-            if (pathInfo.isEmpty()) {
-                // Get all patients: /api/patients
-                handleGetAllPatients(request, response);
-
-            } else if (pathInfo.startsWith("search/")) {
-                // Search by name: /api/patients/search/john
-                String searchTerm = pathInfo.substring("search/".length());
-                handleSearchPatients(request, response, searchTerm);
-
-            } else if (pathInfo.startsWith("contact/")) {
-                // Get by contact number: /api/patients/contact/+94-77-1234567
-                String contactNumber = pathInfo.substring("contact/".length());
-                handleGetByContactNumber(request, response, contactNumber);
-
-            } else {
-                // Try to parse as patient ID
-                try {
-                    int patientId = Integer.parseInt(pathInfo);
-                    handleGetPatientById(request, response, patientId);
-                } catch (NumberFormatException e) {
-                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
-                }
-            }
-
         } catch (Exception e) {
             handleException(request, response, e);
         }
@@ -222,5 +183,61 @@ public class PatientController extends BaseController {
         } else {
             sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Failed to deactivate patient");
         }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        if (!isAuthenticated(request)) {
+            handleException(request, response, new AuthenticationException("User not authenticated"));
+            return;
+        }
+
+        String pathInfo = getPathInfo(request);
+
+        try {
+            if (pathInfo.isEmpty() || pathInfo.equals("all")) {
+                handleGetAllPatients(request, response);
+
+            } else if (pathInfo.startsWith("code/")) {
+                String patientCode = pathInfo.substring("code/".length());
+                handleGetPatientByCode(request, response, patientCode);
+
+            } else if (pathInfo.startsWith("search/")) {
+                String searchTerm = pathInfo.substring("search/".length());
+                handleSearchPatients(request, response, searchTerm);
+
+            } else if (pathInfo.startsWith("contact/")) {
+                String contactNumber = pathInfo.substring("contact/".length());
+                handleGetByContactNumber(request, response, contactNumber);
+
+            } else if (pathInfo.endsWith("/appointments")) {
+                String patientCode = pathInfo.substring(0, pathInfo.length() - "/appointments".length());
+                handleGetPatientWithAppointments(request, response, patientCode);
+
+            } else {
+                sendError(response, HttpServletResponse.SC_NOT_FOUND, "Endpoint not found");
+            }
+
+        } catch (Exception e) {
+            handleException(request, response, e);
+        }
+    }
+
+    /**
+     * Handle get patient by code
+     */
+    private void handleGetPatientByCode(HttpServletRequest request, HttpServletResponse response,
+                                        String patientCode) throws IOException {
+        PatientResponse patientResponse = patientService.getPatientByCode(patientCode);
+        sendSuccess(response, "Patient retrieved successfully", patientResponse);
+    }
+
+    /**
+     * Handle get patient with appointments
+     */
+    private void handleGetPatientWithAppointments(HttpServletRequest request, HttpServletResponse response,
+                                                  String patientCode) throws IOException {
+        Map<String, Object> result = patientService.getPatientWithAppointments(patientCode);
+        sendSuccess(response, "Patient retrieved successfully", result);
     }
 }

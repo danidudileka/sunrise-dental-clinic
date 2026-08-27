@@ -72,3 +72,23 @@ VALUES (1, 2000.00, 500.00, 2500.00, 'PAID', 'CASH'),
        (3, 4000.00, 500.00, 4500.00, 'PENDING', NULL),
        (4, 15000.00, 500.00, 15500.00, 'PENDING', NULL),
        (5, 2500.00, 500.00, 3000.00, 'PENDING', NULL);
+
+
+-- Add dentists as users
+-- Password for all: dentist123
+-- BCrypt hash for dentist123: $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa
+
+INSERT INTO users (username, password_hash, full_name, email, role) VALUES
+                                                                        ('dr.smith', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Dr. John Smith', 'dr.smith@sunrisedental.com', 'DENTIST'),
+                                                                        ('dr.johnson', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Dr. Sarah Johnson', 'dr.johnson@sunrisedental.com', 'DENTIST'),
+                                                                        ('dr.brown', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Dr. Michael Brown', 'dr.brown@sunrisedental.com', 'DENTIST'),
+                                                                        ('dr.davis', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Dr. Emily Davis', 'dr.davis@sunrisedental.com', 'DENTIST'),
+                                                                        ('dr.wilson', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Dr. David Wilson', 'dr.wilson@sunrisedental.com', 'DENTIST');
+
+-- Link dentists to users in staff table
+INSERT INTO staff (user_id, staff_type, dentist_id) VALUES
+                                                        (4, 'DENTIST', 1),  -- dr.smith -> Dr. John Smith
+                                                        (5, 'DENTIST', 2),  -- dr.johnson -> Dr. Sarah Johnson
+                                                        (6, 'DENTIST', 3),  -- dr.brown -> Dr. Michael Brown
+                                                        (7, 'DENTIST', 4),  -- dr.davis -> Dr. Emily Davis
+                                                        (8, 'DENTIST', 5);  -- dr.wilson -> Dr. David Wilson

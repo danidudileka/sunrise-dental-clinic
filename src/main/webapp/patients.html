@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management - Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sunrise Dental</h2>
+            <p>Clinic Management System</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul id="sidebar-menu"></ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-name" id="sidebar-user-name">Loading...</span>
+                <span class="user-role" id="sidebar-user-role"></span>
+            </div>
+            <button id="logout-button" class="btn btn-outline btn-block">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Patient Management</h1>
+            <p>Register and manage patients</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('register')">
+                <i class="fas fa-user-plus"></i> Register Patient
+            </button>
+            <button class="tab-btn" onclick="showTab('search')">
+                <i class="fas fa-search"></i> Search Patient
+            </button>
+            <button class="tab-btn" onclick="showTab('all')">
+                <i class="fas fa-list"></i> All Patients
+            </button>
+        </div>
+
+        <!-- Register Patient Tab -->
+        <div id="register-tab" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Register New Patient</h2>
+                    <p>Fill in patient details to register</p>
+                </div>
+
+                <div id="patient-success" class="alert alert-success" style="display: none;"></div>
+                <div id="patient-error" class="alert alert-error" style="display: none;"></div>
+
+                <form id="patient-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="patient-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number *</label>
+                            <input type="tel" id="contact-number" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" id="date-of-birth" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="gender" class="form-control">
+                                <option value="">Select</option>
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Group</label>
+                            <select id="blood-group" class="form-control">
+                                <option value="">Select</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="address" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Medical History</label>
+                        <textarea id="medical-history" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Register Patient
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search Patient Tab -->
+        <div id="search-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Search Patient</h2>
+                </div>
+
+                <div id="search-error" class="alert alert-error" style="display: none;"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Search By</label>
+                        <select id="search-type" class="form-control">
+                            <option value="code">Patient ID</option>
+                            <option value="name">Patient Name</option>
+                            <option value="contact">Contact Number</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Search Term</label>
+                        <input type="text" id="search-term" class="form-control"
+                               placeholder="Enter search term...">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button onclick="searchPatient()" class="btn btn-primary btn-block">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Patient Details -->
+                <div id="patient-details" style="display: none;">
+                    <h3>Patient Information</h3>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody id="patient-details-body"></tbody>
+                        </table>
+                    </div>
+
+                    <h3>Appointment History</h3>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Appointment #</th>
+                                <th>Dentist</th>
+                                <th>Treatment</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody id="patient-appointments-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Patients Tab -->
+        <div id="all-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>All Patients</h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Registered Date</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="all-patients-body">
+                        <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Patient ID Modal -->
+<div id="patient-id-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <h2>Patient Registered Successfully</h2>
+        <p>Patient ID: <strong id="modal-patient-id"></strong></p>
+        <p>Please save this ID for future reference.</p>
+        <button onclick="closeModal()" class="btn btn-primary">Close</button>
+    </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/patients.js"></script>
+</body>
+</html>

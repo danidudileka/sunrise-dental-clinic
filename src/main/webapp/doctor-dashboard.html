@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sunrise Dental</h2>
+            <p>Doctor Portal</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul id="sidebar-menu"></ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-name" id="sidebar-user-name">Loading...</span>
+                <span class="user-role" id="sidebar-user-role"></span>
+            </div>
+            <button id="logout-button" class="btn btn-outline btn-block">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>My Dashboard</h1>
+            <p>Welcome, <span id="doctor-name"></span></p>
+        </div>
+
+        <!-- Revenue Stats -->
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <h3 id="completed-revenue">Rs. 0</h3>
+                <p><i class="fas fa-check-circle"></i> Completed Revenue</p>
+            </div>
+
+            <div class="stat-card info">
+                <h3 id="upcoming-revenue">Rs. 0</h3>
+                <p><i class="fas fa-clock"></i> Upcoming Revenue</p>
+            </div>
+
+            <div class="stat-card warning">
+                <h3 id="total-revenue">Rs. 0</h3>
+                <p><i class="fas fa-chart-bar"></i> Total Revenue</p>
+            </div>
+        </div>
+
+        <!-- My Appointments -->
+        <div class="card">
+            <div class="card-header">
+                <h2>My Appointments</h2>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Appointment #</th>
+                        <th>Patient</th>
+                        <th>Contact</th>
+                        <th>Treatment</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="doctor-appointments-body">
+                    <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- My Patients -->
+        <div class="card">
+            <div class="card-header">
+                <h2>My Patients</h2>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                    </tr>
+                    </thead>
+                    <tbody id="doctor-patients-body">
+                    <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/doctor.js"></script>
+</body>
+</html>

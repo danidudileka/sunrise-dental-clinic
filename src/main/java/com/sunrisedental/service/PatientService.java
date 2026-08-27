@@ -175,6 +175,57 @@ public class PatientService {
     }
 
     /**
+     * Update patient information
+     */
+    public PatientResponse updatePatient(int patientId, PatientRequest request) {
+        Optional<Patient> patientOptional = patientDao.findById(patientId);
+
+        if (patientOptional.isEmpty()) {
+            throw new NotFoundException("Patient", String.valueOf(patientId));
+        }
+
+        validatePatientRequest(request);
+
+        Patient patient = patientOptional.get();
+        patient.setPatientName(request.getPatientName());
+        patient.setAddress(request.getAddress());
+        patient.setContactNumber(request.getContactNumber());
+        patient.setEmail(request.getEmail());
+        patient.setDateOfBirth(DateUtil.parseDate(request.getDateOfBirth()));
+        patient.setGender(request.getGender());
+        patient.setBloodGroup(request.getBloodGroup());
+        patient.setMedicalHistory(request.getMedicalHistory());
+
+        boolean updated = patientDao.updatePatient(patient);
+
+        if (updated) {
+            logger.info("Updated patient with ID: {}", patientId);
+            return getPatientById(patientId);
+        }
+
+        throw new ValidationException("Failed to update patient");
+    }
+
+    /**
+     * Deactivate patient
+     */
+    public boolean deactivatePatient(int patientId) {
+        Optional<Patient> patientOptional = patientDao.findById(patientId);
+
+        if (patientOptional.isEmpty()) {
+            throw new NotFoundException("Patient", String.valueOf(patientId));
+        }
+
+        boolean deactivated = patientDao.deactivatePatient(patientId);
+
+        if (deactivated) {
+            logger.info("Deactivated patient with ID: {}", patientId);
+        }
+
+        return deactivated;
+    }
+
+    /**
      * Validate patient request
      */
     private void validatePatientRequest(PatientRequest request) {
