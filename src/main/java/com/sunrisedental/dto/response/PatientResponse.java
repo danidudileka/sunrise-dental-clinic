@@ -8,15 +8,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * DTO for patient response.
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientResponse {
     private int patientId;
+    private String patientCode;
     private String patientName;
     private String address;
     private String contactNumber;

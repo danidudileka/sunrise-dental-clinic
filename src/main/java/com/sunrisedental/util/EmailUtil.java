@@ -186,4 +186,47 @@ public class EmailUtil {
 
         return body.toString();
     }
+
+    /**
+     * Send patient registration email
+     */
+    public static boolean sendPatientRegistrationEmail(String toEmail, String patientName, String patientCode) {
+        String subject = "Welcome to Sunrise Dental Clinic - Patient Registration";
+
+        String body = createPatientRegistrationEmailBody(patientName, patientCode);
+
+        return sendEmail(toEmail, subject, body);
+    }
+
+    /**
+     * Create patient registration email body
+     */
+    private static String createPatientRegistrationEmailBody(String patientName, String patientCode) {
+        StringBuilder body = new StringBuilder();
+
+        body.append("Dear ").append(patientName).append(",\n\n");
+        body.append("Welcome to Sunrise Dental Clinic!\n\n");
+        body.append("You have been successfully registered in our system.\n\n");
+        body.append("Your Patient Details:\n");
+        body.append("----------------------------------------\n");
+        body.append("Patient Name: ").append(patientName).append("\n");
+        body.append("Patient ID: ").append(patientCode).append("\n");
+        body.append("----------------------------------------\n\n");
+        body.append("Please keep your Patient ID for future reference.\n");
+        body.append("You will need this ID when booking appointments.\n\n");
+        body.append("Our Services:\n");
+        body.append("- General Dentistry\n");
+        body.append("- Orthodontics\n");
+        body.append("- Periodontics\n");
+        body.append("- Endodontics\n");
+        body.append("- Oral Surgery\n\n");
+        body.append("To book an appointment, please call us at +94-11-2345678\n");
+        body.append("or visit our clinic.\n\n");
+        body.append("Thank you for choosing Sunrise Dental Clinic.\n\n");
+        body.append("Best regards,\n");
+        body.append("Sunrise Dental Clinic\n");
+        body.append("123 Main Street, Colombo 07\n");
+
+        return body.toString();
+    }
 }
