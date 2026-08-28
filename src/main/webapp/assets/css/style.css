@@ -709,3 +709,36 @@ body {
 .error-actions .btn {
     text-decoration: none;
 }
+
+/* Payment Status Banner */
+.payment-banner {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.payment-banner-paid {
+    background: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.payment-banner-pending {
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+}
+
+.payment-banner-partial {
+    background: #cff4fc;
+    color: #055160;
+    border: 1px solid #b6effb;
+}
+
+.payment-banner i {
+    font-size: 24px;
+}

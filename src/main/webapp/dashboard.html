@@ -9,31 +9,25 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <h2>Sunrise Dental</h2>
             <p>Clinic Management System</p>
         </div>
-
         <nav class="sidebar-nav">
-            <ul id="sidebar-menu">
-                <!-- Menu items will be dynamically loaded based on role -->
-            </ul>
+            <ul id="sidebar-menu"></ul>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-info">
                 <span class="user-name" id="sidebar-user-name">Loading...</span>
                 <span class="user-role" id="sidebar-user-role"></span>
             </div>
-            <button id="logout-button" class="btn btn-outline btn-block">
+            <button id="logout-button" class="btn btn-outline btn-block" style="color: white !important">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </button>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
             <h1>Dashboard</h1>
@@ -42,30 +36,7 @@
 
         <!-- Statistics Cards -->
         <div class="stats-grid" id="dashboard-stats">
-            <div class="stat-card">
-                <h3 id="today-appointments">0</h3>
-                <p><i class="fas fa-calendar-day"></i> Today's Appointments</p>
-            </div>
-
-            <div class="stat-card success">
-                <h3 id="week-appointments">0</h3>
-                <p><i class="fas fa-calendar-week"></i> This Week's Appointments</p>
-            </div>
-
-            <div class="stat-card info">
-                <h3 id="total-patients">0</h3>
-                <p><i class="fas fa-users"></i> Total Patients</p>
-            </div>
-
-            <div class="stat-card warning">
-                <h3 id="today-revenue">Rs. 0</h3>
-                <p><i class="fas fa-money-bill"></i> Today's Revenue</p>
-            </div>
-
-            <div class="stat-card danger">
-                <h3 id="month-revenue">Rs. 0</h3>
-                <p><i class="fas fa-chart-line"></i> This Month's Revenue</p>
-            </div>
+            <!-- Stats will be loaded here -->
         </div>
 
         <!-- Quick Actions -->
@@ -73,8 +44,8 @@
             <div class="card-header">
                 <h2>Quick Actions</h2>
             </div>
-            <div class="action-grid" id="quick-actions">
-                <!-- Dynamic based on role -->
+            <div id="quick-actions-container">
+                <!-- Quick action buttons will be added here by JavaScript -->
             </div>
         </div>
     </main>
@@ -82,6 +53,190 @@
 
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth.js"></script>
-<script src="assets/js/dashboard.js"></script>
+
+<script>
+    // Quick Actions based on role
+    document.addEventListener('DOMContentLoaded', function() {
+        const userInfo = Auth.getUserInfo();
+        const role = userInfo.role;
+
+        // Set welcome name
+        document.getElementById('welcome-name').textContent = userInfo.fullName || userInfo.username;
+
+        // Load dashboard stats based on role
+        if (role === 'DENTIST') {
+            loadDoctorStats();
+        } else {
+            loadAdminStats();
+        }
+
+        // Add quick action buttons
+        addQuickActions(role);
+    });
+
+    function addQuickActions(role) {
+        const container = document.getElementById('quick-actions-container');
+
+        let actionsHtml = '<div class="action-grid">';
+
+        if (role === 'ADMIN') {
+            actionsHtml += `
+                    <a href="patients.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-user-plus"></i></div>
+                        <h3>Register Patient</h3>
+                        <p>Add new patient to system</p>
+                    </a>
+                    <a href="appointment.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-calendar-plus"></i></div>
+                        <h3>New Appointment</h3>
+                        <p>Book patient appointment</p>
+                    </a>
+                    <a href="billing.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-file-invoice"></i></div>
+                        <h3>Generate Bill</h3>
+                        <p>Create and process bills</p>
+                    </a>
+                    <a href="reports.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>View Reports</h3>
+                        <p>Access analytics</p>
+                    </a>
+                    <a href="users.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-user-cog"></i></div>
+                        <h3>Manage Users</h3>
+                        <p>Create staff accounts</p>
+                    </a>
+                `;
+        } else if (role === 'RECEPTIONIST') {
+            actionsHtml += `
+                    <a href="patients.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-user-plus"></i></div>
+                        <h3>Register Patient</h3>
+                        <p>Add new patient to system</p>
+                    </a>
+                    <a href="appointment.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-calendar-plus"></i></div>
+                        <h3>New Appointment</h3>
+                        <p>Book patient appointment</p>
+                    </a>
+                    <a href="billing.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-file-invoice"></i></div>
+                        <h3>Generate Bill</h3>
+                        <p>Create and process bills</p>
+                    </a>
+                    <a href="reports.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
+                        <h3>View Reports</h3>
+                        <p>Access analytics</p>
+                    </a>
+                `;
+        } else if (role === 'DENTIST') {
+            actionsHtml += `
+                    <a href="doctor-dashboard.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-calendar-check"></i></div>
+                        <h3>My Appointments</h3>
+                        <p>View assigned appointments</p>
+                    </a>
+                    <a href="patients.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-search"></i></div>
+                        <h3>Search Patient</h3>
+                        <p>Find patient records</p>
+                    </a>
+                    <a href="doctor-dashboard.html" class="action-card">
+                        <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
+                        <h3>My Revenue</h3>
+                        <p>View revenue statistics</p>
+                    </a>
+                `;
+        }
+
+        actionsHtml += '</div>';
+        container.innerHTML = actionsHtml;
+    }
+
+    function loadAdminStats() {
+        const statsContainer = document.getElementById('dashboard-stats');
+
+        statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <h3 id="today-appointments">0</h3>
+                    <p><i class="fas fa-calendar-day"></i> Today's Appointments</p>
+                </div>
+                <div class="stat-card success">
+                    <h3 id="week-appointments">0</h3>
+                    <p><i class="fas fa-calendar-week"></i> This Week</p>
+                </div>
+                <div class="stat-card info">
+                    <h3 id="total-patients">0</h3>
+                    <p><i class="fas fa-users"></i> Total Patients</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3 id="today-revenue">Rs. 0</h3>
+                    <p><i class="fas fa-money-bill"></i> Today's Revenue</p>
+                </div>
+                <div class="stat-card danger">
+                    <h3 id="month-revenue">Rs. 0</h3>
+                    <p><i class="fas fa-chart-line"></i> This Month</p>
+                </div>
+            `;
+
+        // Load actual stats
+        loadStatsData();
+    }
+
+    function loadDoctorStats() {
+        const statsContainer = document.getElementById('dashboard-stats');
+
+        statsContainer.innerHTML = `
+                <div class="stat-card success">
+                    <h3 id="completed-revenue">Rs. 0</h3>
+                    <p><i class="fas fa-check-circle"></i> Completed Revenue</p>
+                </div>
+                <div class="stat-card info">
+                    <h3 id="upcoming-revenue">Rs. 0</h3>
+                    <p><i class="fas fa-clock"></i> Upcoming Revenue</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3 id="total-revenue">Rs. 0</h3>
+                    <p><i class="fas fa-chart-bar"></i> Total Revenue</p>
+                </div>
+            `;
+
+        // Load doctor's revenue stats
+        loadDoctorStatsData();
+    }
+
+    async function loadStatsData() {
+        try {
+            const response = await apiGet('/reports/dashboard');
+
+            if (response.status === 'SUCCESS') {
+                const data = response.data;
+                document.getElementById('today-appointments').textContent = data.todayAppointments || 0;
+                document.getElementById('week-appointments').textContent = data.weekAppointments || 0;
+                document.getElementById('total-patients').textContent = data.totalPatients || 0;
+                document.getElementById('today-revenue').textContent = formatCurrency(data.todayRevenue || 0);
+                document.getElementById('month-revenue').textContent = formatCurrency(data.monthRevenue || 0);
+            }
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    async function loadDoctorStatsData() {
+        try {
+            const response = await apiGet('/doctor/revenue');
+
+            if (response.status === 'SUCCESS') {
+                const data = response.data;
+                document.getElementById('completed-revenue').textContent = formatCurrency(data.completedRevenue || 0);
+                document.getElementById('upcoming-revenue').textContent = formatCurrency(data.upcomingRevenue || 0);
+                document.getElementById('total-revenue').textContent = formatCurrency(data.totalRevenue || 0);
+            }
+        } catch (error) {
+            console.error('Error loading doctor stats:', error);
+        }
+    }
+</script>
 </body>
 </html>

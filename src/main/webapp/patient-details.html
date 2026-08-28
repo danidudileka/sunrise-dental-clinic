@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details - Sunrise Dental Clinic</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sunrise Dental</h2>
+            <p>Clinic Management System</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul id="sidebar-menu"></ul>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-name" id="sidebar-user-name">Loading...</span>
+                <span class="user-role" id="sidebar-user-role"></span>
+            </div>
+            <button id="logout-button" class="btn btn-outline btn-block">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <button onclick="history.back()" class="btn btn-outline btn-sm">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h1>Patient Details</h1>
+        </div>
+
+        <div id="patient-details-container">
+            <div class="text-center">Loading...</div>
+        </div>
+    </main>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/patient-details.js"></script>
+</body>
+</html>

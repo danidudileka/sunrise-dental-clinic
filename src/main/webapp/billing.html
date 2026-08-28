@@ -9,17 +9,14 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <h2>Sunrise Dental</h2>
             <p>Clinic Management System</p>
         </div>
-
         <nav class="sidebar-nav">
             <ul id="sidebar-menu"></ul>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-info">
                 <span class="user-name" id="sidebar-user-name">Loading...</span>
@@ -31,7 +28,6 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
             <h1>Billing Management</h1>
@@ -41,15 +37,14 @@
         <div class="card">
             <div class="card-header">
                 <h2>Generate Bill</h2>
-                <p>Enter appointment number to generate bill</p>
             </div>
 
-            <div id="billing-success" class="alert alert-success" style="display: none;"></div>
             <div id="billing-error" class="alert alert-error" style="display: none;"></div>
+            <div id="billing-success" class="alert alert-success" style="display: none;"></div>
 
             <div class="search-box">
                 <input type="text" id="bill-appointment-number" class="form-control"
-                       placeholder="Enter appointment number (e.g., APT202400001)">
+                       placeholder="Enter appointment number">
                 <button onclick="calculateBill()" class="btn btn-secondary">
                     <i class="fas fa-calculator"></i> Calculate
                 </button>
@@ -58,21 +53,20 @@
                 </button>
             </div>
 
-            <!-- Bill Preview -->
-            <div id="bill-preview" class="bill-preview" style="display: none;">
+            <div id="bill-preview" style="display: none;">
+                <!-- Payment Status Banner -->
+                <div id="payment-status-banner" class="payment-banner"></div>
+
                 <div class="bill-header">
                     <h2>Sunrise Dental Clinic</h2>
                     <p>123 Main Street, Colombo 07</p>
                     <p>Tel: +94-11-2345678</p>
                 </div>
 
-                <div class="bill-details">
-                    <h3>Bill / Receipt</h3>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <tbody id="bill-details-body"></tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody id="bill-details-body"></tbody>
+                    </table>
                 </div>
 
                 <div class="bill-total">
@@ -82,7 +76,7 @@
                 <div class="payment-section" id="payment-section" style="display: none;">
                     <h3>Process Payment</h3>
                     <div class="form-group">
-                        <label for="payment-method">Payment Method</label>
+                        <label>Payment Method</label>
                         <select id="payment-method" class="form-control">
                             <option value="CASH">Cash</option>
                             <option value="CARD">Card</option>

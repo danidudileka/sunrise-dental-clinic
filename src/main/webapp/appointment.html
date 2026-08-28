@@ -9,17 +9,14 @@
 </head>
 <body>
 <div class="app-container">
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <h2>Sunrise Dental</h2>
             <p>Clinic Management System</p>
         </div>
-
         <nav class="sidebar-nav">
             <ul id="sidebar-menu"></ul>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-info">
                 <span class="user-name" id="sidebar-user-name">Loading...</span>
@@ -31,132 +28,90 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <div class="page-header">
             <h1>Appointment Management</h1>
             <p>Register and manage patient appointments</p>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('register')">
-                <i class="fas fa-calendar-plus"></i> Register Appointment
+            <button class="tab-btn active" data-tab="register">
+                <i class="fas fa-calendar-plus"></i> Register
             </button>
-            <button class="tab-btn" onclick="showTab('search')">
-                <i class="fas fa-search"></i> Search Appointment
+            <button class="tab-btn" data-tab="search">
+                <i class="fas fa-search"></i> Search
             </button>
-            <button class="tab-btn" onclick="showTab('today')">
-                <i class="fas fa-calendar-day"></i> Today's Appointments
+            <button class="tab-btn" data-tab="today">
+                <i class="fas fa-calendar-day"></i> Today
             </button>
         </div>
 
-        <!-- Register Appointment Tab -->
         <div id="register-tab" class="tab-content active">
             <div class="card">
                 <div class="card-header">
-                    <h2>New Appointment Registration</h2>
-                    <p>Search patient ID and book appointment</p>
+                    <h2>New Appointment</h2>
                 </div>
-
-                <div id="appointment-success" class="alert alert-success" style="display: none;"></div>
                 <div id="appointment-error" class="alert alert-error" style="display: none;"></div>
 
-                <!-- Step 1: Search Patient -->
-                <div class="patient-search-section">
-                    <label>Enter Patient ID *</label>
+                <div class="form-group">
+                    <label>Patient ID *</label>
                     <div class="search-box">
-                        <input type="text" id="patient-code" class="form-control"
-                               placeholder="Enter Patient ID (e.g., P001)">
+                        <input type="text" id="patient-code" class="form-control" placeholder="Enter Patient ID (e.g., P001)">
                         <button onclick="searchPatientForAppointment()" class="btn btn-secondary">
-                            <i class="fas fa-search"></i> Search Patient
+                            <i class="fas fa-search"></i> Search
                         </button>
-                    </div>
-
-                    <!-- Patient Info Display -->
-                    <div id="patient-info" style="display: none;">
-                        <h4>Patient Information</h4>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <tbody id="patient-info-body"></tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Appointment Details -->
-                <div id="appointment-form-section" style="display: none;">
-                    <h4>Appointment Details</h4>
-                    <form id="appointment-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Dentist *</label>
-                                <select id="dentist-name" class="form-control" required>
-                                    <option value="">Select Dentist</option>
-                                    <option value="Dr. John Smith">Dr. John Smith - General Dentistry</option>
-                                    <option value="Dr. Sarah Johnson">Dr. Sarah Johnson - Orthodontics</option>
-                                    <option value="Dr. Michael Brown">Dr. Michael Brown - Periodontics</option>
-                                    <option value="Dr. Emily Davis">Dr. Emily Davis - Endodontics</option>
-                                    <option value="Dr. David Wilson">Dr. David Wilson - Oral Surgery</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Treatment Type *</label>
-                                <select id="treatment-type" class="form-control" required>
-                                    <option value="">Select Treatment</option>
-                                    <option value="General Checkup">General Checkup - Rs. 2,000</option>
-                                    <option value="Teeth Cleaning">Teeth Cleaning - Rs. 3,500</option>
-                                    <option value="Tooth Extraction">Tooth Extraction - Rs. 4,000</option>
-                                    <option value="Root Canal Treatment">Root Canal Treatment - Rs. 15,000</option>
-                                    <option value="Dental Filling">Dental Filling - Rs. 2,500</option>
-                                    <option value="Dental Crown">Dental Crown - Rs. 20,000</option>
-                                    <option value="Dental Bridge">Dental Bridge - Rs. 25,000</option>
-                                    <option value="Dentures">Dentures - Rs. 30,000</option>
-                                    <option value="Orthodontic Braces">Orthodontic Braces - Rs. 50,000</option>
-                                    <option value="Teeth Whitening">Teeth Whitening - Rs. 8,000</option>
-                                </select>
-                            </div>
-                        </div>
+                <div id="patient-info" style="display: none;"></div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Appointment Date *</label>
-                                <input type="date" id="appointment-date" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Appointment Time *</label>
-                                <input type="time" id="appointment-time" class="form-control"
-                                       min="08:00" max="20:00" required>
-                            </div>
-                        </div>
-
+                <form id="appointment-form" style="display: none;">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label>Notes</label>
-                            <textarea id="notes" class="form-control" rows="3"
-                                      placeholder="Any additional notes..."></textarea>
+                            <label>Dentist *</label>
+                            <select id="dentist-name" class="form-control" required>
+                                <option value="">Loading dentists...</option>
+                            </select>
                         </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-calendar-check"></i> Register Appointment
-                        </button>
-                    </form>
-                </div>
+                        <div class="form-group">
+                            <label>Treatment *</label>
+                            <select id="treatment-type" class="form-control" required>
+                                <option value="">Loading treatments...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="appointment-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time *</label>
+                            <input type="time" id="appointment-time" class="form-control" min="08:00" max="20:00" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i> Register Appointment
+                    </button>
+                </form>
             </div>
         </div>
 
-        <!-- Search Appointment Tab -->
         <div id="search-tab" class="tab-content">
             <div class="card">
                 <div class="card-header">
                     <h2>Search Appointments</h2>
                 </div>
-
                 <div id="search-error" class="alert alert-error" style="display: none;"></div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Search By</label>
-                        <select id="appointment-search-type" class="form-control" onchange="changeAppointmentSearchType()">
+                        <select id="search-type" class="form-control">
                             <option value="appointment">Appointment Number</option>
                             <option value="contact">Contact Number</option>
                             <option value="name">Patient Name</option>
@@ -166,8 +121,7 @@
                     </div>
                     <div class="form-group">
                         <label>Search Term</label>
-                        <input type="text" id="appointment-search-term" class="form-control"
-                               placeholder="Enter search term...">
+                        <input type="text" id="search-term" class="form-control" placeholder="Enter search term...">
                     </div>
                     <div class="form-group">
                         <label>&nbsp;</label>
@@ -177,7 +131,6 @@
                     </div>
                 </div>
 
-                <!-- Results List -->
                 <div id="appointments-list" style="display: none;">
                     <div class="table-responsive">
                         <table class="table">
@@ -185,7 +138,6 @@
                             <tr>
                                 <th>Appointment #</th>
                                 <th>Patient</th>
-                                <th>Contact</th>
                                 <th>Dentist</th>
                                 <th>Treatment</th>
                                 <th>Date</th>
@@ -201,20 +153,17 @@
             </div>
         </div>
 
-        <!-- Today's Appointments Tab -->
         <div id="today-tab" class="tab-content">
             <div class="card">
                 <div class="card-header">
                     <h2>Today's Appointments</h2>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                         <tr>
                             <th>Appointment #</th>
                             <th>Patient</th>
-                            <th>Contact</th>
                             <th>Dentist</th>
                             <th>Treatment</th>
                             <th>Time</th>
@@ -223,7 +172,7 @@
                         </tr>
                         </thead>
                         <tbody id="today-appointments-body">
-                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
