@@ -20,12 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
  * Calculate bill preview
  */
 async function calculateBill() {
-    const appointmentNumber = document.getElementById('bill-appointment-number').value;
+    const appointmentNumber = document.getElementById('bill-appointment-number').value.trim();
 
     if (!appointmentNumber) {
         showAlert('billing-error', 'Please enter an appointment number', 'error');
         return;
     }
+
+    hideAlert('billing-error');
+    hideAlert('billing-success');
 
     try {
         const response = await apiPost('/billing/calculate', {
@@ -37,7 +40,6 @@ async function calculateBill() {
             displayBillPreview(response.data);
             document.getElementById('payment-section').style.display = 'none';
         }
-
     } catch (error) {
         showAlert('billing-error', error.message, 'error');
         document.getElementById('bill-preview').style.display = 'none';
@@ -48,7 +50,7 @@ async function calculateBill() {
  * Generate bill
  */
 async function generateBill() {
-    const appointmentNumber = document.getElementById('bill-appointment-number').value;
+    const appointmentNumber = document.getElementById('bill-appointment-number').value.trim();
 
     if (!appointmentNumber) {
         showAlert('billing-error', 'Please enter an appointment number', 'error');
@@ -66,11 +68,8 @@ async function generateBill() {
             displayBillPreview(response.data);
             document.getElementById('payment-section').style.display = 'block';
 
-            showAlert('billing-success',
-                `Bill generated successfully! Bill Number: ${response.data.billNumber}`,
-                'success');
+            showAlert('billing-success', `Bill generated successfully! Bill Number: ${response.data.billNumber}`, 'success');
         }
-
     } catch (error) {
         showAlert('billing-error', error.message, 'error');
     }
@@ -81,6 +80,9 @@ async function generateBill() {
  */
 function displayBillPreview(bill) {
     const detailsBody = document.getElementById('bill-details-body');
+
+    // Display payment status banner
+    displayPaymentStatusBanner(bill);
 
     const rows = [
         ['Bill Number', bill.billNumber || 'Pending'],
@@ -94,14 +96,6 @@ function displayBillPreview(bill) {
         ['Discount', formatCurrency(bill.discount || 0)]
     ];
 
-    if (bill.paymentStatus) {
-        rows.push(['Payment Status', bill.paymentStatus]);
-    }
-
-    if (bill.paymentMethod) {
-        rows.push(['Payment Method', bill.paymentMethod]);
-    }
-
     detailsBody.innerHTML = rows.map(([label, value]) => `
         <tr>
             <td><strong>${label}</strong></td>
@@ -111,6 +105,45 @@ function displayBillPreview(bill) {
 
     document.getElementById('bill-total-amount').textContent = formatCurrency(bill.totalAmount);
     document.getElementById('bill-preview').style.display = 'block';
+}
+
+/**
+ * Display payment status banner
+ */
+function displayPaymentStatusBanner(bill) {
+    const banner = document.getElementById('payment-status-banner');
+
+    if (!bill.paymentStatus) {
+        banner.innerHTML = '';
+        banner.style.display = 'none';
+        return;
+    }
+
+    let bannerClass = '';
+    let icon = '';
+    let message = '';
+
+    if (bill.paymentStatus === 'PAID') {
+        bannerClass = 'payment-banner-paid';
+        icon = 'fa-check-circle';
+        message = 'Payment Completed';
+    } else if (bill.paymentStatus === 'PENDING') {
+        bannerClass = 'payment-banner-pending';
+        icon = 'fa-clock';
+        message = 'Payment Pending';
+    } else if (bill.paymentStatus === 'PARTIALLY_PAID') {
+        bannerClass = 'payment-banner-partial';
+        icon = 'fa-adjust';
+        message = 'Partially Paid';
+    }
+
+    banner.className = `payment-banner ${bannerClass}`;
+    banner.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <strong>${message}</strong>
+        ${bill.paymentMethod ? `<span> - Method: ${bill.paymentMethod}</span>` : ''}
+    `;
+    banner.style.display = 'block';
 }
 
 /**
@@ -137,7 +170,6 @@ async function processPayment() {
 
             showAlert('billing-success', 'Payment processed successfully!', 'success');
         }
-
     } catch (error) {
         showAlert('billing-error', error.message, 'error');
     }
@@ -147,9 +179,7 @@ async function processPayment() {
  * Print bill
  */
 function printBill() {
-    if (!currentBillData) {
-        return;
-    }
+    if (!currentBillData) return;
 
     const printWindow = window.open('', '_blank');
 
@@ -158,52 +188,14 @@ function printBill() {
             <head>
                 <title>Bill - Sunrise Dental Clinic</title>
                 <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        padding: 40px;
-                        max-width: 600px;
-                        margin: 0 auto;
-                    }
-                    .bill-header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 20px;
-                        border-bottom: 2px solid #667eea;
-                    }
-                    .bill-header h1 {
-                        color: #667eea;
-                        margin-bottom: 10px;
-                    }
-                    .bill-header p {
-                        color: #666;
-                        margin: 5px 0;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 20px;
-                    }
-                    td {
-                        padding: 10px;
-                        border-bottom: 1px solid #ddd;
-                    }
-                    td:first-child {
-                        font-weight: bold;
-                        width: 40%;
-                    }
-                    .total {
-                        text-align: right;
-                        font-size: 20px;
-                        font-weight: bold;
-                        color: #667eea;
-                        margin-top: 20px;
-                    }
-                    .footer {
-                        text-align: center;
-                        margin-top: 50px;
-                        color: #999;
-                        font-size: 12px;
-                    }
+                    body { font-family: Arial, sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
+                    .bill-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6efd; }
+                    .bill-header h1 { color: #0d6efd; margin-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    td { padding: 10px; border-bottom: 1px solid #ddd; }
+                    td:first-child { font-weight: bold; width: 40%; }
+                    .total { text-align: right; font-size: 20px; font-weight: bold; color: #0d6efd; margin-top: 20px; }
+                    .footer { text-align: center; margin-top: 50px; color: #999; font-size: 12px; }
                 </style>
             </head>
             <body>
@@ -212,9 +204,7 @@ function printBill() {
                     <p>123 Main Street, Colombo 07</p>
                     <p>Tel: +94-11-2345678</p>
                 </div>
-                
                 <h2>Bill / Receipt</h2>
-                
                 <table>
                     <tr><td>Bill Number:</td><td>${currentBillData.billNumber || 'N/A'}</td></tr>
                     <tr><td>Appointment Number:</td><td>${currentBillData.appointmentNumber}</td></tr>
@@ -223,27 +213,15 @@ function printBill() {
                     <tr><td>Treatment:</td><td>${currentBillData.treatmentName}</td></tr>
                     <tr><td>Treatment Cost:</td><td>${formatCurrency(currentBillData.treatmentCost)}</td></tr>
                     <tr><td>Consultation Fee:</td><td>${formatCurrency(currentBillData.consultationFee)}</td></tr>
-                    <tr><td>Additional Charges:</td><td>${formatCurrency(currentBillData.additionalCharges || 0)}</td></tr>
                     <tr><td>Discount:</td><td>${formatCurrency(currentBillData.discount || 0)}</td></tr>
                     <tr><td>Payment Status:</td><td>${currentBillData.paymentStatus || 'PENDING'}</td></tr>
                     <tr><td>Payment Method:</td><td>${currentBillData.paymentMethod || 'N/A'}</td></tr>
-                    <tr><td>Date:</td><td>${new Date().toLocaleString()}</td></tr>
                 </table>
-                
-                <div class="total">
-                    Total Amount: ${formatCurrency(currentBillData.totalAmount)}
-                </div>
-                
+                <div class="total">Total Amount: ${formatCurrency(currentBillData.totalAmount)}</div>
                 <div class="footer">
                     <p>Thank you for choosing Sunrise Dental Clinic!</p>
-                    <p>&copy; 2024 Sunrise Dental Clinic. All rights reserved.</p>
                 </div>
-                
-                <script>
-                    window.onload = function() {
-                        window.print();
-                    }
-                <\/script>
+                <script>window.onload = function() { window.print(); }<\/script>
             </body>
         </html>
     `);
