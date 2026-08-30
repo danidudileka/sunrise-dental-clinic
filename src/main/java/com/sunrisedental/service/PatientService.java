@@ -134,6 +134,11 @@ public class PatientService {
         }
 
         List<Patient> patients = patientDao.findByName(name.trim());
+
+        if (patients.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
         return patients.stream()
                 .map(this::mapToPatientResponse)
                 .collect(Collectors.toList());

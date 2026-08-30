@@ -10,9 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-/**
- * DTO for appointment response.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,6 +18,7 @@ public class AppointmentResponse {
     private int appointmentId;
     private String appointmentNumber;
     private String patientName;
+    private String patientCode;
     private String address;
     private String contactNumber;
     private String email;
@@ -33,4 +31,11 @@ public class AppointmentResponse {
     private String status;
     private String notes;
     private LocalDateTime createdAt;
+
+    // Payment details
+    private String paymentStatus;  // PENDING, PAID, etc.
+    private String paymentMethod;  // CASH, CARD, etc.
+    private BigDecimal totalAmount;
+    private String billNumber;
+    private LocalDateTime billDate;
 }

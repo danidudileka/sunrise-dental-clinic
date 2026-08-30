@@ -1,17 +1,11 @@
 package com.sunrisedental.service;
 
-import com.sunrisedental.dao.AppointmentDao;
-import com.sunrisedental.dao.DentistDao;
-import com.sunrisedental.dao.PatientDao;
-import com.sunrisedental.dao.TreatmentDao;
+import com.sunrisedental.dao.*;
 import com.sunrisedental.dto.request.AppointmentRequest;
 import com.sunrisedental.dto.response.AppointmentResponse;
 import com.sunrisedental.exception.NotFoundException;
 import com.sunrisedental.exception.ValidationException;
-import com.sunrisedental.model.Appointment;
-import com.sunrisedental.model.Dentist;
-import com.sunrisedental.model.Patient;
-import com.sunrisedental.model.Treatment;
+import com.sunrisedental.model.*;
 import com.sunrisedental.util.DateUtil;
 import com.sunrisedental.util.EmailUtil;
 import com.sunrisedental.util.ValidationUtil;
@@ -28,18 +22,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Service class for appointment operations.
- * Implements business logic for appointment management.
- */
 public class AppointmentService {
     private static final Logger logger = LogManager.getLogger(AppointmentService.class);
     private final AppointmentDao appointmentDao;
     private final PatientDao patientDao;
     private final DentistDao dentistDao;
     private final TreatmentDao treatmentDao;
+    private final BillDao billDao;  // Add this field
 
-    // Business constants
     private static final BigDecimal DEFAULT_CONSULTATION_FEE = new BigDecimal("500.00");
 
     public AppointmentService() {
@@ -47,6 +37,7 @@ public class AppointmentService {
         this.patientDao = new PatientDao();
         this.dentistDao = new DentistDao();
         this.treatmentDao = new TreatmentDao();
+        this.billDao = new BillDao();  // Initialize the field
     }
 
     /**
@@ -325,5 +316,28 @@ public class AppointmentService {
                 .notes(appointment.getNotes())
                 .createdAt(appointment.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Get appointment with payment details
+     */
+    public AppointmentResponse getAppointmentWithPaymentDetails(String appointmentNumber) {
+        AppointmentResponse appointment = getAppointmentByNumber(appointmentNumber);
+
+        // Get bill details if exists
+        Optional<Bill> billOptional = billDao.findByAppointmentId(appointment.getAppointmentId());
+
+        if (billOptional.isPresent()) {
+            Bill bill = billOptional.get();
+            appointment.setPaymentStatus(bill.getPaymentStatus());
+            appointment.setPaymentMethod(bill.getPaymentMethod());
+            appointment.setTotalAmount(bill.getTotalAmount());
+            appointment.setBillNumber(bill.getBillNumber());
+            appointment.setBillDate(bill.getBillDate());
+        } else {
+            appointment.setPaymentStatus("NOT_BILLED");
+        }
+
+        return appointment;
     }
 }
