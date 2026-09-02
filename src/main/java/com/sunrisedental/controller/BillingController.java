@@ -78,7 +78,7 @@ public class BillingController extends BaseController {
                 handleGetBillByNumber(request, response, billNumber);
 
             } else if (pathInfo.startsWith("appointment/")) {
-                // Get by appointment number: /api/billing/appointment/APT202400001
+                // Get by appointment number: /api/billing/appointment/APT202600001
                 String appointmentNumber = pathInfo.substring("appointment/".length());
                 handleGetBillByAppointment(request, response, appointmentNumber);
 
