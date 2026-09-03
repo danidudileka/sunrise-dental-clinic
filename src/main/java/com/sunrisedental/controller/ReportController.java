@@ -38,7 +38,7 @@ public class ReportController extends BaseController {
 
         try {
             if (pathInfo.isEmpty() || pathInfo.equals("summary")) {
-                // Get comprehensive report: /api/reports/summary?startDate=2024-01-01&endDate=2024-01-31
+                // Get comprehensive report: /api/reports/summary?startDate=2026-01-01&endDate=2026-01-31
                 handleGetSummaryReport(request, response);
 
             } else if (pathInfo.equals("dashboard")) {
@@ -46,11 +46,11 @@ public class ReportController extends BaseController {
                 handleGetDashboardSummary(request, response);
 
             } else if (pathInfo.equals("daily")) {
-                // Get daily appointments: /api/reports/daily?date=2024-01-15
+                // Get daily appointments: /api/reports/daily?date=2026-01-15
                 handleGetDailyAppointments(request, response);
 
             } else if (pathInfo.equals("revenue")) {
-                // Get revenue report: /api/reports/revenue?startDate=2024-01-01&endDate=2024-01-31
+                // Get revenue report: /api/reports/revenue?startDate=2026-01-01&endDate=2026-01-31
                 handleGetRevenueReport(request, response);
 
             } else {
