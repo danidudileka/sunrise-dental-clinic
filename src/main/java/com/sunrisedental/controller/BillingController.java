@@ -83,7 +83,7 @@ public class BillingController extends BaseController {
                 handleGetBillByAppointment(request, response, appointmentNumber);
 
             } else if (pathInfo.startsWith("range/")) {
-                // Get by date range: /api/billing/range/2024-01-01/2024-01-31
+                // Get by date range: /api/billing/range/2026-01-01/2026-01-31
                 String[] parts = pathInfo.substring("range/".length()).split("/");
                 if (parts.length == 2) {
                     handleGetBillsByDateRange(request, response, parts[0], parts[1]);
@@ -92,7 +92,7 @@ public class BillingController extends BaseController {
                 }
 
             } else if (pathInfo.startsWith("revenue/")) {
-                // Get revenue: /api/billing/revenue/2024-01-01/2024-01-31
+                // Get revenue: /api/billing/revenue/2026-01-01/2026-01-31
                 String[] parts = pathInfo.substring("revenue/".length()).split("/");
                 if (parts.length == 2) {
                     handleGetRevenue(request, response, parts[0], parts[1]);

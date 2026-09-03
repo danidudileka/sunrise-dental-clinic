@@ -76,12 +76,12 @@ public class AppointmentController extends BaseController {
 
         try {
             if (pathInfo.startsWith("number/")) {
-                // Get by appointment number: /api/appointments/number/APT202400001
+                // Get by appointment number: /api/appointments/number/APT202600001
                 String appointmentNumber = pathInfo.substring("number/".length());
                 handleGetByNumber(request, response, appointmentNumber);
 
             } else if (pathInfo.startsWith("date/")) {
-                // Get by date: /api/appointments/date/2024-01-15
+                // Get by date: /api/appointments/date/2026-01-15
                 String date = pathInfo.substring("date/".length());
                 handleGetByDate(request, response, date);
 

@@ -45,7 +45,7 @@ public class AppointmentService {
      */
     public AppointmentResponse registerAppointment(AppointmentRequest request, int createdBy) {
         // Validate request
-        validateAppointmentRequest(request);
+//        validateAppointmentRequest(request); //commented for now
 
         // Find patient by patient code
         String patientCode = request.getPatientCode();

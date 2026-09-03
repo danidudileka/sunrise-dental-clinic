@@ -13,11 +13,11 @@ VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa',
 
 -- Dentists
 INSERT INTO dentists (name, specialization, license_number, phone, email)
-VALUES ('Dr. John Smith', 'General Dentistry', 'DLC-2024-001', '+94-11-2345678', 'dr.smith@sunrisedental.com'),
-       ('Dr. Sarah Johnson', 'Orthodontics', 'DLC-2024-002', '+94-11-2345679', 'dr.johnson@sunrisedental.com'),
-       ('Dr. Michael Brown', 'Periodontics', 'DLC-2024-003', '+94-11-2345680', 'dr.brown@sunrisedental.com'),
-       ('Dr. Emily Davis', 'Endodontics', 'DLC-2024-004', '+94-11-2345681', 'dr.davis@sunrisedental.com'),
-       ('Dr. David Wilson', 'Oral Surgery', 'DLC-2024-005', '+94-11-2345682', 'dr.wilson@sunrisedental.com');
+VALUES ('Dr. John Smith', 'General Dentistry', 'DLC-2026-001', '+94-11-2345678', 'dr.smith@sunrisedental.com'),
+       ('Dr. Sarah Johnson', 'Orthodontics', 'DLC-2026-002', '+94-11-2345679', 'dr.johnson@sunrisedental.com'),
+       ('Dr. Michael Brown', 'Periodontics', 'DLC-2026-003', '+94-11-2345680', 'dr.brown@sunrisedental.com'),
+       ('Dr. Emily Davis', 'Endodontics', 'DLC-2026-004', '+94-11-2345681', 'dr.davis@sunrisedental.com'),
+       ('Dr. David Wilson', 'Oral Surgery', 'DLC-2026-005', '+94-11-2345682', 'dr.wilson@sunrisedental.com');
 
 -- Treatments
 INSERT INTO treatments (treatment_code, treatment_name, description, base_cost, duration_minutes)
@@ -54,16 +54,16 @@ VALUES ('John Doe', '123 Main Street, Colombo 07', '+94-77-1234567', 'john.doe@g
 -- Sample Appointments
 INSERT INTO appointments (appointment_number, patient_id, dentist_id, treatment_id, appointment_date, appointment_time,
                           status, notes)
-VALUES ('APT202400001', 1, 1, 1, '2024-01-15', '09:00:00', 'COMPLETED', 'Regular checkup'),
-       ('APT202400002', 2, 2, 2, '2024-01-15', '10:30:00', 'COMPLETED', 'Teeth cleaning session'),
-       ('APT202400003', 3, 3, 3, '2024-01-16', '11:00:00', 'SCHEDULED', 'Tooth extraction'),
-       ('APT202400004', 4, 4, 4, '2024-01-16', '14:00:00', 'SCHEDULED', 'Root canal treatment'),
-       ('APT202400005', 5, 5, 5, '2024-01-17', '09:30:00', 'SCHEDULED', 'Cavity filling'),
-       ('APT202400006', 6, 1, 6, '2024-01-17', '11:30:00', 'SCHEDULED', 'Crown placement'),
-       ('APT202400007', 7, 2, 7, '2024-01-18', '13:00:00', 'SCHEDULED', 'Bridge fitting'),
-       ('APT202400008', 8, 3, 8, '2024-01-18', '15:30:00', 'SCHEDULED', 'Denture fitting'),
-       ('APT202400009', 9, 4, 9, '2024-01-19', '10:00:00', 'SCHEDULED', 'Braces installation'),
-       ('APT202400010', 10, 5, 10, '2024-01-19', '14:30:00', 'SCHEDULED', 'Teeth whitening');
+VALUES ('APT202600001', 1, 1, 1, '2026-01-15', '09:00:00', 'COMPLETED', 'Regular checkup'),
+       ('APT202600002', 2, 2, 2, '2026-01-15', '10:30:00', 'COMPLETED', 'Teeth cleaning session'),
+       ('APT202600003', 3, 3, 3, '2026-01-16', '11:00:00', 'SCHEDULED', 'Tooth extraction'),
+       ('APT202600004', 4, 4, 4, '2026-01-16', '14:00:00', 'SCHEDULED', 'Root canal treatment'),
+       ('APT202600005', 5, 5, 5, '2026-01-17', '09:30:00', 'SCHEDULED', 'Cavity filling'),
+       ('APT202600006', 6, 1, 6, '2026-01-17', '11:30:00', 'SCHEDULED', 'Crown placement'),
+       ('APT202600007', 7, 2, 7, '2026-01-18', '13:00:00', 'SCHEDULED', 'Bridge fitting'),
+       ('APT202600008', 8, 3, 8, '2026-01-18', '15:30:00', 'SCHEDULED', 'Denture fitting'),
+       ('APT202600009', 9, 4, 9, '2026-01-19', '10:00:00', 'SCHEDULED', 'Braces installation'),
+       ('APT202600010', 10, 5, 10, '2026-01-19', '14:30:00', 'SCHEDULED', 'Teeth whitening');
 
 -- Sample Bills
 INSERT INTO bills (appointment_id, treatment_cost, consultation_fee, total_amount, payment_status, payment_method)
