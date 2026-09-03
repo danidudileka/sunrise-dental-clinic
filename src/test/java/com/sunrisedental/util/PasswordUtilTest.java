@@ -82,7 +82,7 @@ class PasswordUtilTest {
     @DisplayName("TC-PWD-007: Strong password passes validation")
     void testStrongPassword() {
         assertTrue(PasswordUtil.isStrongPassword("StrongPass123!"));
-        assertTrue(PasswordUtil.isStrongPassword("Secure@2024Pass"));
+        assertTrue(PasswordUtil.isStrongPassword("Secure@2026Pass"));
     }
 
     @ParameterizedTest

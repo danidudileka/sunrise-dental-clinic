@@ -69,7 +69,7 @@ class BillingServiceTest {
                 .treatmentName("General Checkup")
                 .treatmentCost(new BigDecimal("2000.00"))
                 .consultationFee(new BigDecimal("500.00"))
-                .appointmentDate(LocalDate.parse("2024-03-20"))
+                .appointmentDate(LocalDate.parse("2026-03-20"))
                 .appointmentTime(LocalTime.parse("10:00:00"))
                 .build();
 
@@ -96,7 +96,7 @@ class BillingServiceTest {
                 .treatmentName("Root Canal Treatment")
                 .treatmentCost(new BigDecimal("15000.00"))
                 .consultationFee(new BigDecimal("500.00"))
-                .appointmentDate(LocalDate.parse("2024-03-20"))
+                .appointmentDate(LocalDate.parse("2026-03-20"))
                 .appointmentTime(LocalTime.parse("10:00:00"))
                 .build();
 
