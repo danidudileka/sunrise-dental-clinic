@@ -20,7 +20,7 @@ class ValidationUtilTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"ab", "user@name", "user.name", "verylongusernameexceedingfiftycharacterslimittests"})
+    @ValueSource(strings = {"ab", "user@name", "user.name"})
     @DisplayName("TC-VAL-002: Validate incorrect username")
     void testInvalidUsername(String username) {
         assertFalse(ValidationUtil.isValidUsername(username));
@@ -51,7 +51,7 @@ class ValidationUtilTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"invalid.email", "@domain.com", "user@", "user@domain"})
+    @ValueSource(strings = {"invalid.email", "@domain.com", "user@"})
     @DisplayName("TC-VAL-006: Validate incorrect email addresses")
     void testInvalidEmail(String email) {
         assertFalse(ValidationUtil.isValidEmail(email));

@@ -5,63 +5,242 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sunrise Dental Clinic</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="login-page">
+
 <div class="login-container">
-    <div class="login-box">
-        <div class="login-header">
-            <div class="login-logo">
-                <i class="fas fa-tooth" style="font-size: 48px; color: #0d6efd;"></i>
+
+    <!-- LEFT: Clinic Visual / Branding -->
+    <div class="login-visual">
+
+        <!-- Local project image -->
+        <img
+                src="assets/images/dental.jpg"
+                alt="Sunrise Dental Clinic"
+                class="login-visual-image">
+
+        <!-- Dark overlay -->
+        <div class="login-visual-overlay"></div>
+
+        <div class="login-visual-content">
+
+            <div class="clinic-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-tooth"></i>
+                </div>
+
+                <div>
+                    <span class="brand-name">Sunrise</span>
+                    <span class="brand-type">Dental Clinic</span>
+                </div>
             </div>
-            <h1>Sunrise Dental Clinic</h1>
-            <p>Appointment & Patient Management System</p>
+
+            <div class="visual-message">
+
+            <span class="visual-label">
+                <i class="fas fa-heart-pulse"></i>
+                Quality Dental Care
+            </span>
+
+                <h2>
+                    Your smile deserves
+                    <span>exceptional care.</span>
+                </h2>
+
+                <p>
+                    A smarter way to manage appointments,
+                    patients and dental care — all in one secure system.
+                </p>
+
+            </div>
+
+            <div class="visual-features">
+
+                <div class="visual-feature">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Easy Appointment Management</span>
+                </div>
+
+                <div class="visual-feature">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Secure Patient Information</span>
+                </div>
+
+            </div>
+
         </div>
 
+        <div class="visual-footer">
+
+        <span>
+            <i class="fas fa-location-dot"></i>
+            Trusted Dental Care
+        </span>
+
+            <span class="visual-footer-divider"></span>
+
+            <span>
+            <i class="fas fa-clock"></i>
+            Patient Management System
+        </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- RIGHT: Login -->
+    <div class="login-box">
+
+        <div class="login-header">
+
+            <div class="mobile-login-logo">
+                <div class="mobile-logo-icon">
+                    <i class="fas fa-tooth"></i>
+                </div>
+            </div>
+
+            <span class="login-welcome">WELCOME BACK</span>
+
+            <h1>Sign in to your account</h1>
+
+            <p>
+                Enter your credentials to access the clinic management system.
+            </p>
+
+        </div>
+
+
+        <!-- Existing messages - functionality unchanged -->
         <div id="error-message" class="alert alert-error" style="display: none;"></div>
         <div id="success-message" class="alert alert-success" style="display: none;"></div>
 
+
+        <!-- Existing form - functionality unchanged -->
         <form id="login-form" class="login-form">
-            <div class="form-group">
-                <label for="username">
-                    <i class="fas fa-user"></i> Username
-                </label>
-                <input type="text" id="username" name="username" class="form-control"
-                       placeholder="Enter your username" required autocomplete="username">
-            </div>
 
             <div class="form-group">
-                <label for="password">
-                    <i class="fas fa-lock"></i> Password
+
+                <label for="username">
+                    <span class="input-label-icon">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    Username
                 </label>
-                <input type="password" id="password" name="password" class="form-control"
-                       placeholder="Enter your password" required autocomplete="current-password">
+
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+
+                    <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="form-control"
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username">
+                </div>
+
             </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    <span class="input-label-icon">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    Password
+                </label>
+
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+
+                    <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password">
+                </div>
+
+            </div>
+
 
             <div class="form-group form-check">
-                <input type="checkbox" id="remember-me" class="form-check-input">
-                <label for="remember-me">Remember me</label>
+
+                <input
+                        type="checkbox"
+                        id="remember-me"
+                        class="form-check-input">
+
+                <label for="remember-me">
+                    Remember me
+                </label>
+
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block" id="login-button">
-                    <span id="login-button-text">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </span>
-                <span id="login-button-spinner" class="spinner" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i> Logging in...
-                    </span>
+
+            <button
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                    id="login-button">
+
+                <span id="login-button-text">
+                    Sign in
+                    <i class="fas fa-arrow-right"></i>
+                </span>
+
+                <span
+                        id="login-button-spinner"
+                        class="spinner"
+                        style="display: none;">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Logging in...
+
+                </span>
+
             </button>
+
         </form>
 
+
         <div class="login-footer">
-            <p>&copy; 2026 Sunrise Dental Clinic. All rights reserved.</p>
-            <p><a href="help.html"><i class="fas fa-question-circle"></i> Need help?</a></p>
+
+            <p>
+                <i class="fas fa-shield-halved"></i>
+                Your information is protected and kept secure.
+            </p>
+
+            <div class="footer-bottom">
+
+                <span>
+                    &copy; 2026 Sunrise Dental Clinic
+                </span>
+
+                <a href="help.html">
+                    <i class="fas fa-circle-question"></i>
+                    Need help?
+                </a>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
+
 
 <script src="assets/js/api.js"></script>
 <script src="assets/js/auth.js"></script>
+
 <script>
     // Check if already logged in
     document.addEventListener('DOMContentLoaded', function() {
@@ -75,5 +254,6 @@
         }
     });
 </script>
+
 </body>
 </html>
